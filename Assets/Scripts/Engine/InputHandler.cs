@@ -11,10 +11,10 @@ namespace Engine
         Touch touch;
         TouchPhase touchPhase;
         public bool shouldTrackInput = false;
-        public bool initialized=false;
+        public bool initialized = false;
         public UnityEvent<GameObject> OnRaycastHit;
         public LayerMask layerMask;
-      
+
         private void Awake()
         {
             raycaster = new RaycastHandler(raycastCamera, layerMask, Mathf.Infinity);
@@ -34,6 +34,12 @@ namespace Engine
 
         public void Update()
         {
+#if UNITY_EDITOR
+            if(Input.GetMouseButtonUp(0))
+            {
+                raycaster.Raycast(Input.mousePosition);
+            }
+#else
             if (!shouldTrackInput)
             {
                 return;
@@ -46,6 +52,7 @@ namespace Engine
             {
                 return;
             }
+#endif
         }
         private void ProcessInput()
         {

@@ -95,9 +95,6 @@ namespace Game.ActorAndPlayers
         public bool intialized = false;
         public virtual void Die() { alive = false; }
 
-        private void OnDestroy() { GameHandler.instance.inputHandler.OnRaycastHit.RemoveListener(OnRaycastHit); }
-        private void OnDisable() { GameHandler.instance.inputHandler.OnRaycastHit.RemoveListener(OnRaycastHit); }
-
         public void Initialize(string uniquePlayerID, Camera worldCamera, List<CardTypeScriptableObject> loadout = null)
         {
             metaData.ID = uniquePlayerID;
@@ -106,8 +103,7 @@ namespace Game.ActorAndPlayers
             {
                 this.loadout = loadout;
             }
-            playerOverUI.LoadStausUI(this, worldCamera,  new Vector3(this.transform.position.x,(_collider.bounds.max.y + 1.15f)));
-            GameHandler.instance.inputHandler.OnRaycastHit.AddListener(OnRaycastHit);
+            playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (_collider.bounds.max.y + 1.15f)));
         }
         public void TakeDamage(int incomingDamage)
         {
@@ -141,17 +137,6 @@ namespace Game.ActorAndPlayers
             {
                 outline.enabled = incomingBool;
             }
-        }
-        protected virtual void OnRaycastHit(GameObject gameObject)
-        {
-            if (gameObject == this.gameObject)
-            {
-                OnSelect();
-            }
-        }
-        public virtual void OnSelect()
-        {
-
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Engine
             this.raycastCamera = raycastCamera;
             this.layerFilter = layerFilter;
             this.distance = distance;
+            raycastEvent= new RaycastEvent();
         }
         public void Raycast(Vector2 screenPosition)
         {

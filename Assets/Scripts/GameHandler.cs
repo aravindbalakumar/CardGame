@@ -53,8 +53,26 @@ namespace Game
             }
             _instance = this;
             StartCoroutine(InitializeSupportSystems());
+            inputHandler.OnRaycastHit.AddListener(OnRaycastHit);
+        }
+        private void OnDestroy()
+        {
+            inputHandler.OnRaycastHit.RemoveListener(OnRaycastHit);
         }
 
+        private void OnRaycastHit(GameObject hitObject)
+        {
+            var playerComp = hitObject.GetComponent<Player>();
+            if (playerComp == null && selectedCard == null)
+            {
+                return;
+            }
+        }
+
+        private void ProcessTheCard()
+        {
+
+        }
         private IEnumerator InitializeSupportSystems()
         {
             yield return new WaitUntil(() => _inputHandler.initialized);
@@ -97,6 +115,7 @@ namespace Game
                 _inputHandler.shouldTrackInput = isCardSelected;
             }
         }
+
         private void EnterTargettingMode(TargetGroup? incomingTargetGroup)
         {
             if (incomingTargetGroup == null)
@@ -120,10 +139,6 @@ namespace Game
                     _inputHandler.layerMask.value |= (1 << otherLayerInt);
                 }
             }
-        }
-        public void UseCardOnPlayer(Player player)
-        {
-
         }
     }
 }
