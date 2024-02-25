@@ -5,7 +5,7 @@ namespace Game.DataStructures
     [Serializable]
     public enum CardType { offensive, defensive, utiility }
     [Serializable]
-    public enum Action { Attack, Heal, Debuff,Buff }
+    public enum CardActionType { Attack, Heal, Debuff,Buff }
 
     [Serializable, Flags]
     public enum TargetGroup { self = 1, others = 2, }
@@ -19,14 +19,14 @@ namespace Game.DataStructures
     [Serializable]
     public struct CardAction
     {
-        public Action actionType;
+        public CardActionType actionType;
         public int value;
         public int persistance;
     }
     [Serializable]
     public struct StatusEffects
     {
-        public Action EffectorProperty;
+        public CardActionType EffectorProperty;
         public EffectInvokeTime timeOfInvoke;
 
     }

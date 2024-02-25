@@ -6,6 +6,7 @@ namespace Game
     using Engine;
     using System;
     using System.Collections;
+    using Game.DataStructures;
 
     public class GameHandler : MonoBehaviour
     {
@@ -82,7 +83,7 @@ namespace Game
             {
                 this.selectedCard.DeselectCard();
             }
-            ResetTargettingState();
+            EnterTargettingMode(null);
             if (selectedCard == this.selectedCard)
             {
                 this.selectedCard = null;
@@ -91,29 +92,35 @@ namespace Game
             else
             {
                 this.selectedCard = selectedCard;
-                if (selectedCard.cardTargetGroup.HasFlag(DataStructures.TargetGroup.self))
-                {
-                    currentLocalPlayer.Highlight(true);
-                    _inputHandler.layerMask.value |= (1 << playerLayerInt);
-                }
-                if (selectedCard.cardTargetGroup.HasFlag(DataStructures.TargetGroup.others))
-                {
-                    opponents.ForEach(x => x.Highlight(true));
-                    _inputHandler.layerMask.value |= (1 << otherLayerInt);
-                }
+                EnterTargettingMode(selectedCard.cardTargetGroup);
                 isCardSelected = true;
                 _inputHandler.shouldTrackInput = isCardSelected;
             }
         }
-
-        private void ResetTargettingState()
+        private void EnterTargettingMode(TargetGroup? incomingTargetGroup)
         {
-            _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
-            _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
-            currentLocalPlayer.Highlight(false);
-            opponents.ForEach(x => x.Highlight(false));
+            if (incomingTargetGroup == null)
+            {
+                _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
+                _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
+                currentLocalPlayer.Highlight(false);
+                opponents.ForEach(x => x.Highlight(false));
+                return;
+            }
+            else
+            {
+                if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.self))
+                {
+                    currentLocalPlayer.Highlight(true);
+                    _inputHandler.layerMask.value |= (1 << playerLayerInt);
+                }
+                if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.others))
+                {
+                    opponents.ForEach(x => x.Highlight(true));
+                    _inputHandler.layerMask.value |= (1 << otherLayerInt);
+                }
+            }
         }
-
         public void UseCardOnPlayer(Player player)
         {
 
