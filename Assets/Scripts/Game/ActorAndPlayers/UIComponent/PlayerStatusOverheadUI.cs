@@ -26,7 +26,7 @@ namespace Game.ActorAndPlayers
             playerNameText.text = player.name;
             armorCountText.text = player.Armor.ToString();
             healthBar.onValueChanged.AddListener(OnSliderUpdate);
-            player.OnPlayerStatusUpdate += StatusUpdate;
+            player.OnPlayerUIUpdate += StatusUpdate;
         }
 
         private void StatusUpdate(bool alive, int health, int armor)
@@ -42,7 +42,7 @@ namespace Game.ActorAndPlayers
         {
             healthBar.onValueChanged.RemoveListener(OnSliderUpdate);
             healthBar.onValueChanged.RemoveAllListeners();
-            player.OnPlayerStatusUpdate -= StatusUpdate;
+            player.OnPlayerUIUpdate -= StatusUpdate;
         }
 
         private void OnDestroy()

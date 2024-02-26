@@ -15,11 +15,10 @@ MonoBehaviour:
   metaData:
     name: Heal
     cardTexture: {fileID: 2800000, guid: 9219f374e5617f041a40020f61ea5c82, type: 3}
-  type: 2
   targetGroup: 1
-  selfCardActions:
+  cardActions:
   - actionType: 1
-    value: 5
-    persistance: 0
-  otherCardActions: []
+    statusType: 0
+    value: 25
+    duration: 0
   energyUsage: 2

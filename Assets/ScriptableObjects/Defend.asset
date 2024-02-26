@@ -15,11 +15,10 @@ MonoBehaviour:
   metaData:
     name: shield
     cardTexture: {fileID: 2800000, guid: e69e3dcd8f3543542b1ad795be5065c6, type: 3}
-  type: 0
   targetGroup: 1
-  selfCardActions:
-  - actionType: 3
+  cardActions:
+  - actionType: 2
+    statusType: 0
     value: 5
-    persistance: 0
-  otherCardActions: []
+    duration: 1
   energyUsage: 2

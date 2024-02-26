@@ -23,7 +23,7 @@ namespace Engine
         }
         private void OnApplicationQuit() { raycaster.OnRaycastHit -= RaycastHit; }
 
-
+        public void UpdateRaycastLayer() => raycaster.UpdateLayerMask(layerMask);
         private void RaycastHit(object sender, RaycastEvent raycastEvent)
         {
             if (raycastEvent.raycastHit.transform != null)
@@ -35,7 +35,7 @@ namespace Engine
         public void Update()
         {
 #if UNITY_EDITOR
-            if(Input.GetMouseButtonUp(0))
+            if (Input.GetMouseButtonUp(0))
             {
                 raycaster.Raycast(Input.mousePosition);
             }

@@ -67,11 +67,22 @@ namespace Game
             {
                 return;
             }
-        }
-
-        private void ProcessTheCard()
-        {
-
+            foreach (CardAction ca in selectedCard.cardData.cardActions)
+            {
+                switch (ca.actionType)
+                {
+                    case CardActionType.Attack:
+                        playerComp.TakeDamage(ca.value);
+                        break;
+                    case CardActionType.StatusEffect:
+                        playerComp.ApplyStatus(ca.statusType, ca.duration, ca.value);
+                        break;
+                    case CardActionType.Heal:
+                        playerComp.AddHealth(ca.value);
+                        break;
+                }
+            }
+            currentLocalPlayer.OnTurnEnd();
         }
         private IEnumerator InitializeSupportSystems()
         {
@@ -122,6 +133,7 @@ namespace Game
             {
                 _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
                 _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
+                _inputHandler.UpdateRaycastLayer();
                 currentLocalPlayer.Highlight(false);
                 opponents.ForEach(x => x.Highlight(false));
                 return;
@@ -138,6 +150,7 @@ namespace Game
                     opponents.ForEach(x => x.Highlight(true));
                     _inputHandler.layerMask.value |= (1 << otherLayerInt);
                 }
+                _inputHandler.UpdateRaycastLayer();
             }
         }
     }

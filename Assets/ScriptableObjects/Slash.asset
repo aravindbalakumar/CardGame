@@ -15,11 +15,10 @@ MonoBehaviour:
   metaData:
     name: slash
     cardTexture: {fileID: 2800000, guid: 43824238dc715904c8bca6298adecee5, type: 3}
-  type: 0
   targetGroup: 2
-  selfCardActions: []
-  otherCardActions:
+  cardActions:
   - actionType: 0
-    value: 2
-    persistance: 0
-  energyUsage: 1
+    statusType: 0
+    value: 10
+    duration: 0
+  energyUsage: 2

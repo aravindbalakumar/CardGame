@@ -22,6 +22,13 @@ namespace Game
 
             }
         }
+        public CardTypeScriptableObject cardData
+        {
+            get
+            {
+                return cardBehaviourAndData;
+            }
+        }
         [SerializeField] Image cardIcon;
         [SerializeField] TextMeshProUGUI cardName;
         [SerializeField] TextMeshProUGUI cardEnergy;

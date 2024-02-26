@@ -9,10 +9,8 @@ namespace Game.ScriptableObjects.Card
     public class CardTypeScriptableObject : ScriptableObject
     {
         public CardMetaData metaData;
-        public CardType type;
         public TargetGroup targetGroup;
-        public List<CardAction> selfCardActions;
-        public List<CardAction> otherCardActions;
+        public List<CardAction> cardActions;
         [Range(1, 10)] public int energyUsage = 1;
     }
 }
