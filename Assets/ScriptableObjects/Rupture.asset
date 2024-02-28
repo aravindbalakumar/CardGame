@@ -15,7 +15,7 @@ MonoBehaviour:
   metaData:
     name: Rupture
     cardTexture: {fileID: 10300, guid: 0000000000000000f000000000000000, type: 0}
-  targetGroup: -1
+  targetGroup: 2
   cardActions:
   - actionType: 0
     statusType: 0
