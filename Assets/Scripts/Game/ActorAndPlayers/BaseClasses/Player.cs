@@ -31,6 +31,11 @@ namespace Game.ActorAndPlayers
             get { return stats.MaxHealth; }
             private set { }
         }
+        public int MaxArmor
+        {
+            get { return stats.MaxArmor; }
+            private set { }
+        }
         public int Health
         {
             get

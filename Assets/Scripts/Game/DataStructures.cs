@@ -3,7 +3,7 @@ namespace Game.DataStructures
     using System;
     using UnityEngine;
     [Serializable]
-    public enum CardActionType { Attack, Heal, StatusEffect }
+    public enum CardActionType { Attack, Heal,Armor, StatusEffect }
     public enum StatusType { RestoreArmor, RestoreHealth, ShatterArmor, Bleed }
 
     [Serializable, Flags]
@@ -37,5 +37,39 @@ namespace Game.DataStructures
         public int Armor;
         public int MaxArmor;
         public int Damage;
+    }
+
+    public enum ComparisonMethod
+    {
+        GREATERTHAN,
+        LESSTHAN,
+        GREATERTHANEQUAL,
+        LESSTHANEQUAL,
+        NOTEQUAL,
+        EQUAL,
+        DIRECTPOSITIVE,
+        DIRECTNEGATIVE,
+    }
+
+    public enum BotAction
+    {
+        heal,
+        attack,
+        defend,
+        flee
+    }
+    public enum NodeType
+    {
+        comparison,
+        execution
+    }
+
+    public enum Attribute
+    {
+        health,
+        armor,
+        debuffCount,
+        healthPercent,
+        armorPercent
     }
 }

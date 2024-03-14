@@ -1,12 +1,12 @@
 namespace Game
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-    using Game.ActorAndPlayers;
     using Engine;
+    using Game.ActorAndPlayers;
+    using Game.DataStructures;
     using System;
     using System.Collections;
-    using Game.DataStructures;
+    using System.Collections.Generic;
+    using UnityEngine;
 
     public class GameHandler : MonoBehaviour
     {
@@ -67,22 +67,29 @@ namespace Game
             {
                 return;
             }
-            foreach (CardAction ca in selectedCard.cardData.cardActions)
-            {
-                switch (ca.actionType)
-                {
-                    case CardActionType.Attack:
-                        playerComp.TakeDamage(ca.value);
-                        break;
-                    case CardActionType.StatusEffect:
-                        playerComp.ApplyStatus(ca.statusType, ca.duration, ca.value);
-                        break;
-                    case CardActionType.Heal:
-                        playerComp.AddHealth(ca.value);
-                        break;
-                }
-            }
+            ProcessCardAction(playerComp, selectedCard.cardData.cardAction);
+            ProcessCardAction(playerComp, selectedCard.cardData.postCardAction);
             currentLocalPlayer.OnTurnEnd();
+        }
+
+        public void ProcessCardAction(Player playerComp, CardAction cardAction)
+        {
+
+            switch (cardAction.actionType)
+            {
+                case CardActionType.Attack:
+                    playerComp.TakeDamage(cardAction.value);
+                    break;
+                case CardActionType.StatusEffect:
+                    playerComp.ApplyStatus(cardAction.statusType, cardAction.duration, cardAction.value);
+                    break;
+                case CardActionType.Heal:
+                    playerComp.AddHealth(cardAction.value);
+                    break;
+                case CardActionType.Armor:
+                    playerComp.AddArmor(cardAction.value);
+                    break;
+            }
         }
         private IEnumerator InitializeSupportSystems()
         {
