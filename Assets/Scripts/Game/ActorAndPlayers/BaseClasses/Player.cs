@@ -109,7 +109,7 @@ namespace Game.ActorAndPlayers
                 this.loadout = loadout;
             }
             statusEffects = new Dictionary<StatusType, Vector2Int>();
-            playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (_collider.bounds.max.y + 1.15f)));
+             playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (_collider.bounds.max.y + 1.15f)));
         }
         public void TakeDamage(int incomingDamage)
         {

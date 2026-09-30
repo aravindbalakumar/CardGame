@@ -17,7 +17,7 @@ namespace Game.ActorAndPlayers
         public void LoadStausUI(Player player, Camera worldCamera,Vector3 worldPosition)
         {
             this.player = player;
-            //this.transform.position = worldPosition;
+            this.transform.position = worldPosition;
             healthBar.maxValue = this.player.MaxHealth;
             healthBar.minValue = 0;
             this.threeDCanvas.worldCamera = worldCamera;
