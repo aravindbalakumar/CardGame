@@ -14,6 +14,8 @@ namespace Engine
         public bool initialized = false;
         public UnityEvent<GameObject> OnRaycastHit;
         public LayerMask layerMask;
+        // Optional overlay gate. The original raycast path is unchanged without a UI adapter.
+        public Func<bool> IsPointerInputBlocked;
 
         private void Awake()
         {
@@ -34,6 +36,10 @@ namespace Engine
 
         public void Update()
         {
+            if (IsPointerInputBlocked?.Invoke() == true)
+            {
+                return;
+            }
 #if UNITY_EDITOR
             if (Input.GetMouseButtonUp(0))
             {

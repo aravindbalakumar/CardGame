@@ -1,0 +1,108 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="GameView.uss" />
+    <ui:VisualElement name="game-root" class="game-root">
+        <ui:VisualElement class="background" picking-mode="Ignore" />
+        <ui:VisualElement class="top-bar">
+            <ui:Image class="portrait" tooltip="Voss" />
+            <ui:Image class="heart icon" />
+            <ui:Label name="header-health" text="50/50" class="health-text" />
+            <ui:Image class="currency icon" />
+            <ui:Label name="currency-count" text="15" class="stat-text" tooltip="Reference preview: currency has no gameplay source yet." />
+            <ui:VisualElement class="spacer" />
+            <ui:Label name="preview-label" text="DESIGN PREVIEW" class="eyebrow preview-label" tooltip="Gameplay actors are inactive in this scene. Reference values are shown until a live hand is available." />
+            <ui:Button name="journal-button" class="nav-button journal" tooltip="Journal is not implemented yet." enabled="false" />
+            <ui:Button name="deck-button" class="nav-button book" tooltip="View hand" />
+            <ui:Button name="settings-button" class="nav-button gear" tooltip="UI display options" />
+        </ui:VisualElement>
+        <ui:VisualElement class="arena">
+            <ui:VisualElement class="inventory">
+                <ui:Image class="inventory-icon telescope" tooltip="Relic preview" />
+                <ui:Image class="inventory-icon compass" tooltip="Relic preview" />
+                <ui:Image class="inventory-icon quill" tooltip="Relic preview" />
+                <ui:Label text="0" class="small-count" />
+                <ui:Image class="inventory-icon potion" tooltip="Potion preview" />
+                <ui:Image class="inventory-icon vial" tooltip="Potion preview" />
+                <ui:Image class="inventory-icon pouch" tooltip="Relic preview" />
+                <ui:Image class="inventory-icon blue-vial" tooltip="Potion preview" />
+            </ui:VisualElement>
+            <ui:VisualElement class="battlefield">
+                <ui:VisualElement class="hero-space">
+                    <ui:Image name="hero-art" class="hero-art" picking-mode="Ignore" />
+                    <ui:Button name="self-target" class="actor-target self-target" tooltip="Target yourself with the selected card" />
+                </ui:VisualElement>
+                <ui:VisualElement class="enemy-space">
+                    <ui:VisualElement class="enemy-status">
+                        <ui:Image class="enemy-crest" />
+                        <ui:Label name="enemy-name" text="Rider &amp; Warg" class="enemy-name" />
+                        <ui:VisualElement class="health-track">
+                            <ui:VisualElement name="enemy-health-fill" class="health-fill" />
+                            <ui:Label name="enemy-health" text="25/25" class="health-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Image name="enemy-art" class="enemy-art" picking-mode="Ignore" />
+                    <ui:Button name="enemy-target" class="actor-target enemy-target" tooltip="Target the opponent with the selected card" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="intent-column">
+                <ui:Image class="map" tooltip="Map preview" />
+                <ui:VisualElement class="spacer" />
+                <ui:VisualElement name="intent-preview" class="intent-preview" tooltip="Reference intent preview; the existing game has no intent API.">
+                    <ui:VisualElement class="intent-heading">
+                        <ui:Image class="attack-icon" />
+                        <ui:Label text="T1" class="turn-badge" />
+                    </ui:VisualElement>
+                    <ui:Label text="Turn 2: Lifesteal 10&#10;(deals 10, heals 10)" class="parchment intent-note" />
+                    <ui:Label text="Turn 3: Buff&#10;(gain 3 Strength)" class="parchment intent-note" />
+                    <ui:Label text="SPECIAL: Kill first&#10;or he heals faster&#10;than you damage him." class="parchment intent-note special-note" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="bottom-area">
+            <ui:VisualElement name="player-status" class="player-status active-player">
+                <ui:VisualElement class="health-track player-health-track">
+                    <ui:VisualElement name="player-health-fill" class="health-fill" />
+                    <ui:Label name="player-health" text="50/50" class="health-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="block-row">
+                    <ui:Image class="block-icon" />
+                    <ui:Label name="player-block" text="10 Block" class="block-text" />
+                </ui:VisualElement>
+                <ui:VisualElement class="energy-orb" tooltip="Reference preview. The current game defines card costs but has no energy pool.">
+                    <ui:VisualElement class="orb-rim" picking-mode="Ignore" />
+                    <ui:VisualElement class="orb-inner" picking-mode="Ignore" />
+                    <ui:VisualElement class="orb-glint" picking-mode="Ignore" />
+                    <ui:Label name="energy-value" text="3/3" class="energy-value" />
+                </ui:VisualElement>
+                <ui:Label text="Energy" class="energy-caption" />
+            </ui:VisualElement>
+            <ui:VisualElement class="hand-region">
+                <ui:Label name="selection-hint" text="" class="selection-hint" />
+                <ui:ScrollView name="hand-scroll" mode="Horizontal" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Hidden" class="hand-scroll">
+                    <ui:VisualElement name="hand" class="hand" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+            <ui:VisualElement class="controls">
+                <ui:Button name="end-turn" text="End Turn" class="end-turn" tooltip="Requires an active, initialized gameplay hand." />
+                <ui:VisualElement class="pile-row">
+                    <ui:Button name="draw-pile" class="pile" tooltip="View current hand">
+                        <ui:Label text="HAND" class="eyebrow" />
+                        <ui:VisualElement class="deck-stack" picking-mode="Ignore"><ui:VisualElement class="deck-stack-inner" picking-mode="Ignore" /></ui:VisualElement>
+                        <ui:Label name="hand-count" text="5" class="pile-count" />
+                    </ui:Button>
+                    <ui:VisualElement class="pile unavailable" tooltip="No discard pile exists in the current gameplay API.">
+                        <ui:Label text="DISCARD" class="eyebrow" />
+                        <ui:Label text="—" class="pile-symbol" />
+                        <ui:Label name="discard-count" text="—" class="pile-count" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="options-panel" class="options-panel hidden">
+            <ui:Label text="Crimson Doom" class="panel-title" />
+            <ui:Label text="UI display" class="eyebrow" />
+            <ui:Toggle name="animate-art" label="Animate battlefield art" value="true" />
+            <ui:Label text="Disable the [UI Toolkit] scene object to return to the preserved Canvas." class="options-help" />
+            <ui:Button name="close-options" text="Close" class="panel-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

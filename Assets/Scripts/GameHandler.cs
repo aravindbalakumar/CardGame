@@ -16,6 +16,8 @@ namespace Game
         [SerializeField] List<Player> opponents;
         int playerLayerInt, otherLayerInt;
         Card selectedCard;
+        // Read-only view access keeps the parallel Toolkit hand in sync with Canvas selection.
+        public Card SelectedCard => selectedCard;
         bool isCardSelected = false;
         [Header("Support Systems")]
         public Camera mainCamera;

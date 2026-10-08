@@ -1,0 +1,37 @@
+{
+  "existingSceneBlocks": 226,
+  "changedExistingBlocks": [
+    "9223372036854775807"
+  ],
+  "addedBlocks": 4,
+  "existingCanvasPreserved": true,
+  "onlyExpectedRootListChanged": true,
+  "unityVersion": "6000.6.4f1",
+  "layoutsChecked": [
+    "1920x1080",
+    "1280x1024",
+    "2560x1080",
+    "900x1200"
+  ],
+  "liveBindingChecks": {
+    "sixCardHand": true,
+    "healBefore": 16,
+    "healAfter": 26,
+    "healthLabel": "26/30",
+    "repeatedCardsDistinct": true,
+    "emptyLiveHand": true,
+    "turnAvailability": true,
+    "selectionClearing": true,
+    "options": true,
+    "canvasFallback": true,
+    "reenable": true,
+    "inputGateRelease": true
+  },
+  "unrelatedConsoleMessages": [
+    "DOTween PluginImporter version warnings",
+    "Visual Scripting: 84 node options failed to load"
+  ],
+  "sceneReopenedSuccessfully": true,
+  "canvasSnapshotUnchangedAfterPlayMode": true,
+  "missingUxmlDependencies": []
+}

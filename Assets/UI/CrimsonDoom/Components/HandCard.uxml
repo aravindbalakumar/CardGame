@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:Button name="card" class="hand-card">
+        <ui:Image name="card-frame" class="card-frame" scale-mode="StretchToFill" picking-mode="Ignore" />
+        <ui:Image name="card-art" class="card-art" picking-mode="Ignore" />
+        <ui:Label name="card-title" class="card-title" picking-mode="Ignore" />
+        <ui:Label name="card-cost" class="card-cost" picking-mode="Ignore" />
+        <ui:Label name="card-description" class="card-description" picking-mode="Ignore" />
+    </ui:Button>
+</ui:UXML>
