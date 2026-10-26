@@ -54,13 +54,14 @@ namespace CrimsonDoom.UI.Editor
                 if (opponents.arraySize > 0) Set(serialized, "opponent", opponents.GetArrayElementAtIndex(0).objectReferenceValue);
             }
             Set(serialized, "heroRenderer", FindRenderer(scene, "Voss_Idle"));
+            var attackRenderer = FindRenderer(scene, "Voss_Attack");
+            var hurtRenderer = FindRenderer(scene, "Voss_Hurt");
+            var characterAnimations = serialized.FindProperty("characterAnimations");
+            characterAnimations.arraySize = 2;
+            SetCharacterAnimation(characterAnimations.GetArrayElementAtIndex(0), "Voss", "Attack", 0, attackRenderer);
+            SetCharacterAnimation(characterAnimations.GetArrayElementAtIndex(1), "Voss", "Hurt", 0, hurtRenderer);
             Set(serialized, "enemyRenderer", FindRenderer(scene, "Wrag_Idle"));
             Set(serialized, "cardTemplate", AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Folder + "Components/HandCard.uxml"));
-            var enemyFrames = AssetDatabase.LoadAllAssetsAtPath("Assets/Sprites/Warg/Warg_IDLE.png").OfType<Sprite>()
-                .OrderBy(s => int.Parse(s.name.Substring(s.name.LastIndexOf('_') + 1))).ToArray();
-            var animation = serialized.FindProperty("enemyFrames");
-            animation.arraySize = enemyFrames.Length;
-            for (int i = 0; i < enemyFrames.Length; i++) animation.GetArrayElementAtIndex(i).objectReferenceValue = enemyFrames[i];
             var sprites = AssetDatabase.LoadAllAssetsAtPath("Assets/Sprites/UI/Cardswithoutdescription.png").OfType<Sprite>().ToArray();
             var names = new[] { "strike", "Resuurection", "Sword slash", "Holy light", "Blessing" };
             var cards = serialized.FindProperty("previewCardSprites");
@@ -79,7 +80,19 @@ namespace CrimsonDoom.UI.Editor
         private static void Set(SerializedObject target, string property, Object value) =>
             target.FindProperty(property).objectReferenceValue = value;
 
+        private static void SetCharacterAnimation(SerializedProperty binding, string characterName,
+            string animationName, int characterSlot, SpriteRenderer renderer)
+        {
+            binding.FindPropertyRelative("characterName").stringValue = characterName;
+            binding.FindPropertyRelative("animationName").stringValue = animationName;
+            binding.FindPropertyRelative("characterSlot").enumValueIndex = characterSlot;
+            binding.FindPropertyRelative("renderer").objectReferenceValue = renderer;
+            binding.FindPropertyRelative("animator").objectReferenceValue =
+                renderer != null ? renderer.GetComponent<Animator>() : null;
+        }
+
         private static SpriteRenderer FindRenderer(Scene scene, string name) => scene.GetRootGameObjects()
-            .Where(g => g.name == name).Select(g => g.GetComponent<SpriteRenderer>()).FirstOrDefault();
+            .SelectMany(g => g.GetComponentsInChildren<Transform>(true))
+            .Where(t => t.name == name).Select(t => t.GetComponent<SpriteRenderer>()).FirstOrDefault();
     }
 }

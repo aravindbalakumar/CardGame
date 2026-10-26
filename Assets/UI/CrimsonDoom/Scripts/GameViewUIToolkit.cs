@@ -14,20 +14,32 @@ namespace CrimsonDoom.UI
     [DefaultExecutionOrder(100)]
     public sealed class GameViewUIToolkit : MonoBehaviour
     {
+        private enum CharacterSlot
+        {
+            Hero,
+            Enemy
+        }
+
+        [System.Serializable]
+        private sealed class CharacterAnimationBinding
+        {
+            public string characterName;
+            public string animationName;
+            public CharacterSlot characterSlot;
+            public SpriteRenderer renderer;
+            public Animator animator;
+        }
+
         [SerializeField] private GameHandler gameHandler;
         [SerializeField] private UserPlayer localPlayer;
         [SerializeField] private Player opponent;
         [SerializeField] private Transform legacyCardParent;
         [SerializeField] private SpriteRenderer heroRenderer;
         [SerializeField] private SpriteRenderer enemyRenderer;
+        [Tooltip("Add one entry per animation pose. The assigned scene object's Transform controls its placement.")]
+        [SerializeField] private List<CharacterAnimationBinding> characterAnimations = new List<CharacterAnimationBinding>();
         [SerializeField] private VisualTreeAsset cardTemplate;
         [SerializeField] private Sprite[] previewCardSprites;
-        [SerializeField] private Sprite[] enemyFrames;
-        [Tooltip("UV bounds excluding the transparent padding in the existing hero frames.")]
-        [SerializeField] private Rect heroArtBounds = new Rect(0.09f, 0.20f, 0.82f, 0.60f);
-        [Tooltip("Fixed world rectangle represented by the battlefield background, independent of actor Transforms.")]
-        [SerializeField] private Rect battlefieldWorldBounds = new Rect(-9.605f, -4.095f, 19.21f, 8.19f);
-
         private static readonly string[] PreviewDescriptions =
         {
             "Deal 10 damage.", "Return a fallen\nally to 50% HP.", "Deal 10 damage.",
@@ -37,17 +49,20 @@ namespace CrimsonDoom.UI
         private readonly List<CardTypeScriptableObject> displayedHand = new List<CardTypeScriptableObject>();
         private readonly List<Button> cardButtons = new List<Button>();
         private readonly List<Card> legacyCards = new List<Card>();
-        private VisualElement root, hand, playerFill, enemyFill, options, playerStatus, intentPreview, battlefieldBackground;
+        private VisualElement root, hand, playerFill, enemyFill, options, playerStatus, intentPreview;
         private Label headerHealth, playerHealth, block, enemyHealth, enemyName, hint;
         private Label handCount, previewLabel, energyValue, currencyCount;
         private Button endTurn, selfTarget, enemyTarget, settingsButton, closeOptions, deckButton, drawPile;
-        private Image heroArt, enemyArt;
-        private Toggle animateArt;
+        private Button stopAnimationPreview;
+        private VisualElement animationButtons;
+        private Label animationStatus;
         private IVisualElementScheduledItem refreshTask;
         private Card selectedCard;
         private bool showingPreview, initialized, turnAvailable = true;
-        private Sprite lastHeroSprite, lastEnemySprite;
+        private SpriteRenderer activeHeroRenderer;
+        private SpriteRenderer activeEnemyRenderer;
         private int legacyChildCount;
+        private bool animationControlsDirty;
 
         private bool HasLiveGame => Application.isPlaying && localPlayer != null &&
             localPlayer.isActiveAndEnabled && !string.IsNullOrEmpty(localPlayer.playerID) && localPlayer.currentHand != null;
@@ -64,7 +79,6 @@ namespace CrimsonDoom.UI
             }
             root = documentRoot.Q("game-root");
             if (root == null) return;
-            battlefieldBackground = root.Q(className: "background");
             hand = root.Q("hand");
             headerHealth = root.Q<Label>("header-health");
             playerHealth = root.Q<Label>("player-health");
@@ -82,22 +96,24 @@ namespace CrimsonDoom.UI
             endTurn = root.Q<Button>("end-turn");
             selfTarget = root.Q<Button>("self-target");
             enemyTarget = root.Q<Button>("enemy-target");
-            heroArt = root.Q<Image>("hero-art");
-            enemyArt = root.Q<Image>("enemy-art");
             options = root.Q("options-panel");
             intentPreview = root.Q("intent-preview");
             settingsButton = root.Q<Button>("settings-button");
             closeOptions = root.Q<Button>("close-options");
+            animationButtons = root.Q("animation-buttons");
+            animationStatus = root.Q<Label>("animation-status");
+            stopAnimationPreview = root.Q<Button>("stop-animation-preview");
             deckButton = root.Q<Button>("deck-button");
             drawPile = root.Q<Button>("draw-pile");
-            animateArt = root.Q<Toggle>("animate-art");
             endTurn.clicked += EndTurn;
             selfTarget.clicked += TargetSelf;
             enemyTarget.clicked += TargetOpponent;
             settingsButton.clicked += ToggleOptions;
             closeOptions.clicked += CloseOptions;
+            stopAnimationPreview.clicked += StopAnimationPreview;
             deckButton.clicked += FocusHand;
             drawPile.clicked += FocusHand;
+            BuildAnimationControls();
             root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             if (Application.isPlaying)
             {
@@ -109,6 +125,8 @@ namespace CrimsonDoom.UI
             }
             showingPreview = !HasLiveGame;
             initialized = true;
+            activeHeroRenderer = heroRenderer;
+            activeEnemyRenderer = enemyRenderer;
             RefreshFromGame(true);
             // Existing hand lists and selection have no events; compare at 10 Hz, never rebuild per frame.
             refreshTask = root.schedule.Execute(() => RefreshFromGame(false)).Every(100);
@@ -119,6 +137,8 @@ namespace CrimsonDoom.UI
         {
             if (!initialized) OnEnable();
         }
+
+        private void OnValidate() => animationControlsDirty = true;
 
         private System.Collections.IEnumerator WaitForDocument()
         {
@@ -141,14 +161,20 @@ namespace CrimsonDoom.UI
             enemyTarget.clicked -= TargetOpponent;
             settingsButton.clicked -= ToggleOptions;
             closeOptions.clicked -= CloseOptions;
+            stopAnimationPreview.clicked -= StopAnimationPreview;
             deckButton.clicked -= FocusHand;
             drawPile.clicked -= FocusHand;
             root.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             displayedHand.Clear();
             legacyCards.Clear();
             cardButtons.Clear();
-            lastHeroSprite = lastEnemySprite = null;
             initialized = false;
+        }
+
+        // Read-only projection for targeting. Scene objects and their Animators own rendering.
+        private void LateUpdate()
+        {
+            if (initialized) RefreshActorPlacement();
         }
 
         private void OnSystemsInitialized() => root.schedule.Execute(() => RefreshFromGame(true));
@@ -169,6 +195,12 @@ namespace CrimsonDoom.UI
         private void RefreshFromGame(bool force)
         {
             if (!initialized) return;
+            if (animationControlsDirty)
+            {
+                animationControlsDirty = false;
+                BuildAnimationControls();
+                force = true;
+            }
             bool preview = !HasLiveGame;
             bool modeChanged = showingPreview != preview;
             showingPreview = preview;
@@ -201,7 +233,6 @@ namespace CrimsonDoom.UI
                 RefreshAvailability();
             }
             if (force || modeChanged) RefreshAvailability();
-            if (animateArt.value || force) RefreshActorArt();
             RefreshActorPlacement();
         }
 
@@ -348,22 +379,119 @@ namespace CrimsonDoom.UI
             enemyFill.style.width = Length.Percent(Mathf.Clamp01((float)health / Mathf.Max(1, opponent.MaxHealth)) * 100);
         }
 
-        private void RefreshActorArt()
+        public void PlayHeroAttack() => PlayHeroAnimation("Attack");
+
+        public void PlayHeroHurt() => PlayHeroAnimation("Hurt");
+
+        /// <summary>Play a named hero animation configured in the Inspector.</summary>
+        public void PlayHeroAnimation(string animationName)
         {
-            if (heroRenderer != null && heroRenderer.sprite != lastHeroSprite)
+            if (!Application.isPlaying) return;
+            foreach (var binding in characterAnimations)
             {
-                lastHeroSprite = heroRenderer.sprite;
-                heroArt.image = lastHeroSprite.texture;
-                heroArt.uv = heroArtBounds;
+                if (binding == null || binding.characterSlot != CharacterSlot.Hero ||
+                    !string.Equals(binding.animationName, animationName, System.StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                PlayCharacterAnimation(binding);
+                return;
             }
-            Sprite enemySprite = enemyRenderer != null ? enemyRenderer.sprite : null;
-            if (enemyFrames != null && enemyFrames.Length > 0)
-                enemySprite = enemyFrames[Application.isPlaying ? Mathf.FloorToInt(Time.unscaledTime * 12f) % enemyFrames.Length : 0];
-            if (enemySprite != null && enemySprite != lastEnemySprite)
+            Debug.LogWarning("No hero animation is configured with the name '" + animationName + "'.", this);
+        }
+
+        /// <summary>Play a configured scene animation by character and animation name.</summary>
+        public void PlayCharacterAnimation(string characterName, string animationName)
+        {
+            if (!Application.isPlaying || string.IsNullOrEmpty(characterName) ||
+                string.IsNullOrEmpty(animationName)) return;
+            foreach (var binding in characterAnimations)
             {
-                lastEnemySprite = enemySprite;
-                enemyArt.sprite = lastEnemySprite;
+                if (binding == null ||
+                    !string.Equals(binding.characterName, characterName, System.StringComparison.OrdinalIgnoreCase) ||
+                    !string.Equals(binding.animationName, animationName, System.StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                PlayCharacterAnimation(binding);
+                return;
             }
+
+            Debug.LogWarning("No character animation is configured for '" + characterName + " / " + animationName + "'.", this);
+        }
+
+        private void PlayCharacterAnimation(CharacterAnimationBinding binding)
+        {
+            if (!Application.isPlaying || binding.renderer == null) return;
+            var animator = binding.animator != null ? binding.animator : binding.renderer.GetComponent<Animator>();
+            if (!binding.renderer.gameObject.activeInHierarchy || animator == null || !animator.isActiveAndEnabled ||
+                animator.runtimeAnimatorController == null)
+            {
+                SetText(animationStatus, "Enable the object and assign an enabled Animator in the Inspector.");
+                return;
+            }
+            // Explicit button/API action only. Never enable, move, resize, rebind or recull an object.
+            animator.Play(0, 0, 0);
+            if (binding.characterSlot == CharacterSlot.Hero) activeHeroRenderer = binding.renderer;
+            else activeEnemyRenderer = binding.renderer;
+            SetText(animationStatus, binding.characterName + " / " + binding.animationName + " restarted");
+        }
+
+        private void BuildAnimationControls()
+        {
+            animationButtons.Clear();
+            AddAnimationControl("Voss", "Idle", CharacterSlot.Hero, heroRenderer,
+                heroRenderer != null ? heroRenderer.GetComponent<Animator>() : null);
+            AddAnimationControl("Wrag", "Idle", CharacterSlot.Enemy, enemyRenderer,
+                enemyRenderer != null ? enemyRenderer.GetComponent<Animator>() : null);
+            foreach (var binding in characterAnimations)
+            {
+                if (binding == null || string.IsNullOrEmpty(binding.characterName) ||
+                    string.IsNullOrEmpty(binding.animationName)) continue;
+                AddAnimationControl(binding.characterName, binding.animationName, binding.characterSlot,
+                    binding.renderer, binding.animator);
+            }
+        }
+
+        private void AddAnimationControl(string characterName, string animationName, CharacterSlot slot,
+            SpriteRenderer renderer, Animator animator)
+        {
+            if (animator == null && renderer != null) animator = renderer.GetComponent<Animator>();
+            var button = new Button { text = characterName + " / " + animationName };
+            button.AddToClassList("animation-choice");
+            button.SetEnabled(renderer != null && animator != null);
+            button.clicked += () =>
+            {
+                if (renderer == null || animator == null)
+                {
+                    Debug.LogWarning("Assign a Sprite Renderer and Animator to '" + characterName + " / " +
+                        animationName + "' to preview it.", this);
+                    return;
+                }
+
+                var binding = new CharacterAnimationBinding
+                {
+                    characterName = characterName,
+                    animationName = animationName,
+                    characterSlot = slot,
+                    renderer = renderer,
+                    animator = animator
+                };
+                PlayCharacterAnimation(binding);
+            };
+            animationButtons.Add(button);
+        }
+
+        private void StopAnimationPreview()
+        {
+            if (!Application.isPlaying) return;
+            activeHeroRenderer = heroRenderer;
+            activeEnemyRenderer = enemyRenderer;
+            foreach (var renderer in new[] { heroRenderer, enemyRenderer })
+            {
+                var animator = renderer != null ? renderer.GetComponent<Animator>() : null;
+                if (animator != null && animator.isActiveAndEnabled && animator.runtimeAnimatorController != null)
+                    animator.Play(0, 0, 0);
+            }
+            SetText(animationStatus, "Idle animations restarted; scene visibility is unchanged");
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
@@ -375,67 +503,42 @@ namespace CrimsonDoom.UI
 
         private void RefreshActorPlacement()
         {
-            if (battlefieldBackground == null || battlefieldBackground.panel == null ||
-                battlefieldWorldBounds.width <= 0 || battlefieldWorldBounds.height <= 0) return;
-            var backgroundRect = battlefieldBackground.contentRect;
-            // A UIDocument can be attached before its first layout, when dimensions are NaN.
-            if (!(backgroundRect.width > 0) || !(backgroundRect.height > 0)) return;
-
-            // Match the background's centered "cover" layout. No actor provides the origin or
-            // scale for another actor, so changing either Transform affects only its own image.
-            float unitsToPanel = Mathf.Max(backgroundRect.width / battlefieldWorldBounds.width,
-                backgroundRect.height / battlefieldWorldBounds.height);
-            var panelOrigin = battlefieldBackground.LocalToWorld(backgroundRect.center);
-            if (heroRenderer != null && heroRenderer.sprite != null)
-            {
-                var sprite = heroRenderer.sprite;
-                var crop = new Rect(sprite.texture.width * heroArtBounds.x - sprite.rect.x,
-                    sprite.texture.height * heroArtBounds.y - sprite.rect.y,
-                    sprite.texture.width * heroArtBounds.width, sprite.texture.height * heroArtBounds.height);
-                PlaceActorImage(heroArt, selfTarget, heroRenderer, sprite, crop, panelOrigin, unitsToPanel);
-            }
-            if (enemyRenderer != null && enemyArt != null && enemyArt.sprite != null)
-            {
-                var sprite = enemyArt.sprite;
-                PlaceActorImage(enemyArt, enemyTarget, enemyRenderer, sprite,
-                    new Rect(Vector2.zero, sprite.rect.size), panelOrigin, unitsToPanel);
-            }
+            if (root == null || root.panel == null) return;
+            var camera = Camera.main;
+            if (camera == null) return;
+            PlaceTarget(selfTarget, activeHeroRenderer != null ? activeHeroRenderer : heroRenderer, camera);
+            PlaceTarget(enemyTarget, activeEnemyRenderer != null ? activeEnemyRenderer : enemyRenderer, camera);
         }
 
-        private void PlaceActorImage(Image art, Button target, SpriteRenderer renderer, Sprite sprite,
-            Rect crop, Vector2 panelOrigin, float unitsToPanel)
+        private void PlaceTarget(Button target, SpriteRenderer renderer, Camera camera)
         {
-            if (art == null || art.parent == null) return;
-            var actorTransform = renderer.transform;
-            var actorScale = actorTransform.lossyScale;
-            var center = (crop.center - sprite.pivot) / sprite.pixelsPerUnit;
-            if (renderer.flipX) center.x = -center.x;
-            if (renderer.flipY) center.y = -center.y;
-            var worldCenter = actorTransform.TransformPoint(new Vector3(center.x, center.y, 0));
-            var delta = (Vector2)worldCenter - battlefieldWorldBounds.center;
-            var panelCenter = panelOrigin + new Vector2(delta.x, -delta.y) * unitsToPanel;
-            float width = crop.width / sprite.pixelsPerUnit * Mathf.Abs(actorScale.x) * unitsToPanel;
-            float height = crop.height / sprite.pixelsPerUnit * Mathf.Abs(actorScale.y) * unitsToPanel;
-            var rotation = new Rotate(-actorTransform.eulerAngles.z);
-            var scale = new Scale(new Vector3(
-                Mathf.Sign(actorScale.x) * (renderer.flipX ? -1 : 1),
-                Mathf.Sign(actorScale.y) * (renderer.flipY ? -1 : 1), 1));
-            SetActorRect(art, panelCenter, width, height, rotation, scale);
-            if (target != null) SetActorRect(target, panelCenter, width, height, rotation, scale);
-        }
-
-        private static void SetActorRect(VisualElement element, Vector2 panelCenter,
-            float width, float height, Rotate rotation, Scale scale)
-        {
-            var localCenter = element.parent.WorldToLocal(panelCenter);
-            element.style.right = StyleKeyword.Auto;
-            element.style.bottom = StyleKeyword.Auto;
-            element.style.left = localCenter.x - width * 0.5f;
-            element.style.top = localCenter.y - height * 0.5f;
-            element.style.width = width;
-            element.style.height = height;
-            element.style.rotate = rotation;
-            element.style.scale = scale;
+            if (target == null || target.parent == null) return;
+            bool visible = renderer != null && renderer.enabled && renderer.gameObject.activeInHierarchy &&
+                renderer.sprite != null && (camera.cullingMask & (1 << renderer.gameObject.layer)) != 0 &&
+                GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(camera), renderer.bounds);
+            target.style.visibility = visible ? Visibility.Visible : Visibility.Hidden;
+            if (!visible) return;
+            var bounds = renderer.bounds;
+            var minimum = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            var maximum = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = bounds.center + Vector3.Scale(bounds.extents,
+                    new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                var screen = camera.WorldToScreenPoint(corner);
+                if (screen.z < camera.nearClipPlane) continue;
+                var panel = RuntimePanelUtils.ScreenToPanel(root.panel, new Vector2(screen.x, Screen.height - screen.y));
+                var local = target.parent.WorldToLocal(panel);
+                minimum = Vector2.Min(minimum, local);
+                maximum = Vector2.Max(maximum, local);
+            }
+            if (!float.IsFinite(minimum.x)) { target.style.visibility = Visibility.Hidden; return; }
+            target.style.right = StyleKeyword.Auto;
+            target.style.bottom = StyleKeyword.Auto;
+            target.style.left = minimum.x;
+            target.style.top = minimum.y;
+            target.style.width = maximum.x - minimum.x;
+            target.style.height = maximum.y - minimum.y;
         }
 
         private void ToggleOptions() => options.ToggleInClassList("hidden");

@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="GameView.uss" />
     <ui:VisualElement name="game-root" class="game-root">
-        <ui:VisualElement class="background" picking-mode="Ignore" />
         <ui:VisualElement class="top-bar">
             <ui:Image class="portrait" tooltip="Voss" />
             <ui:Image class="heart icon" />
@@ -27,7 +26,6 @@
             </ui:VisualElement>
             <ui:VisualElement class="battlefield">
                 <ui:VisualElement class="hero-space">
-                    <ui:Image name="hero-art" class="hero-art" picking-mode="Ignore" />
                     <ui:Button name="self-target" class="actor-target self-target" tooltip="Target yourself with the selected card" />
                 </ui:VisualElement>
                 <ui:VisualElement class="enemy-space">
@@ -39,7 +37,6 @@
                             <ui:Label name="enemy-health" text="25/25" class="health-value" />
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:Image name="enemy-art" class="enemy-art" picking-mode="Ignore" />
                     <ui:Button name="enemy-target" class="actor-target enemy-target" tooltip="Target the opponent with the selected card" />
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -99,9 +96,12 @@
         </ui:VisualElement>
         <ui:VisualElement name="options-panel" class="options-panel hidden">
             <ui:Label text="Crimson Doom" class="panel-title" />
-            <ui:Label text="UI display" class="eyebrow" />
-            <ui:Toggle name="animate-art" label="Animate battlefield art" value="true" />
-            <ui:Label text="Disable the [UI Toolkit] scene object to return to the preserved Canvas." class="options-help" />
+            <ui:Label text="CHARACTER ANIMATIONS" class="eyebrow" />
+            <ui:Label name="animation-status" text="Scene objects control visibility and playback" class="animation-status" />
+            <ui:ScrollView name="animation-buttons" mode="Vertical" vertical-scroller-visibility="Auto" class="animation-buttons" />
+            <ui:Button name="stop-animation-preview" text="Restart Idle" class="panel-button" />
+            <ui:Label text="Scene rendering" class="eyebrow options-section" />
+            <ui:Label text="Characters render directly from the scene. Edit their Transform, SpriteRenderer and Animator in the Inspector." class="options-help" />
             <ui:Button name="close-options" text="Close" class="panel-button" />
         </ui:VisualElement>
     </ui:VisualElement>

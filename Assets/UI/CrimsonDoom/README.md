@@ -1,89 +1,93 @@
-# Crimson Doom parallel UI Toolkit view
+# Crimson Doom UI Toolkit HUD and scene rendering
 
-Open `Assets/Scenes/GameView.unity` and enter Play Mode. The new root is
-`[UI Toolkit] Crimson Doom Game UI`. Disable that object to reveal the original
-Canvas. The original Canvas, its components, references, active flags, assets,
-and serialized hierarchy are preserved.
+Open `Assets/Scenes/GameView.unity`. The HUD root is
+`[UI Toolkit] Crimson Doom Game UI`. Characters and the background render
+normally through Main Camera. The Toolkit battlefield is transparent.
 
-`GameView.uxml` and `GameView.uss` define the screen. `Components/HandCard.uxml`
-is the reusable card view. `GameViewUIToolkit` adapts existing game objects.
-`GameViewPanelSettings.asset` uses a 1672 × 941 reference resolution, screen-size
-scaling with a 0.5 width/height match, and sorting order 100 above the Canvas.
-`RuntimeTheme.tss` imports Unity's runtime theme.
+## Add or edit a character
 
-The layout uses flex regions, a horizontally scrolling hand, and geometry-based
-compact, narrow, and portrait classes. Absolute placement is limited to layered
-art, card contents, targeting hit areas, and the options overlay. Existing sprite
-subassets are referenced directly; no original textures, sprite slicing, or font
-imports were changed. Battlefield art reuses the hero frames and the existing
-36-frame dark rider/warg sheet. The energy ornament is USS.
+1. Add a GameObject or prefab to the Hierarchy with a SpriteRenderer and a
+   Sprite assigned. An empty GameObject cannot render by itself.
+2. Enable the GameObject and all its parents, and enable its SpriteRenderer.
+   Keep the renderer color alpha above zero and use a sprite-compatible material.
+3. Set its Transform directly in the normal Inspector. For the current 2D camera,
+   use Z=0.4, rotation zero initially, and a nonzero scale. Main Camera is at
+   Z=-10 with orthographic size 5; at 16:9 its visible XY range is approximately
+   X=-8.89 to 8.89 and Y=-5 to 5. Frame the object in Scene View with F, then check
+   Game View. Move it or adjust the camera if its visible art is outside the view.
+4. Use a layer included in Main Camera's Culling Mask. Default/layer 0 is included
+   in the current scene. Background has Sorting Order 0; use 1 or higher for a
+   character on the same Sorting Layer.
+5. For animation, add an enabled Animator with an Animator Controller and make
+   the desired sprite clip its default state. Use sprite-only animation keys if
+   you want to adjust placement manually; Transform curves, root motion and
+   animated renderer-enabled/color properties are controlled by the Animator.
+6. Save the scene outside Play Mode. Ordinary Unity Play Mode edits are discarded
+   when Play Mode ends.
 
-## Current scene and bindings
+No entry in GameViewUIToolkit's Character Animations list is required for
+visibility. This applies to Wrag_Attack and to new objects added during Play
+Mode. Visibility follows the actual Hierarchy, renderer and camera settings.
+Voss_Attack and Voss_Hurt were manually inactive in the user's latest scene;
+that choice is retained rather than overridden.
 
-The gameplay `Player`, `Goblin`, and `Goblin_spearman` objects were already
-inactive. This remains unchanged. Consequently, the default screen explicitly
-shows **DESIGN PREVIEW** with the reference hand, health, currency, energy, and
-intent text. Preview cards can be inspected; they do not perform game actions.
-End Turn and unavailable navigation actions are disabled.
+## What was removed
 
-When the existing player initializes, the view reads `currentHand`, subscribes
-to `OnPlayerUIUpdate`, shows actual card data/costs/effects, and tracks the
-original card selection. Empty live hands stay empty. Repeated card assets map
-to separate existing card instances. Health and block are event-driven. A 100 ms
-schedule detects list/selection changes and advances art; it rebuilds the hand
-only when its contents or existing card hierarchy change.
+The old view drew an opaque background and copies of registered character
+sprites. That covered newly added world objects, including Wrag_Attack. It also
+activated actors, forced SpriteRenderer.enabled, changed Animator culling/root
+motion settings and rewrote stored Transforms every LateUpdate. All of that
+character presentation ownership, duplicate actor images, generated enemy-frame
+playback and automatic gameplay animation switching has been removed.
 
-Card selection calls the existing `Card.OnCardSelected`; targeting invokes the
-existing `InputHandler.OnRaycastHit` route. End Turn calls the existing
-`Player.OnTurnEnd`, which currently processes status durations, and clears
-selection. The game has no broader turn manager or energy-spending system.
-`SetTurnAvailable(bool)` is an optional hook for a future turn controller.
-`RefreshHand()` provides an immediate refresh after external list mutations.
-The opponent panel is bound to the first configured opponent; the reference
-art remains the scene's rider/warg presentation.
+GameViewUIToolkit now reads character bounds only to project transparent target
+buttons through Main Camera. It does not change a character's Transform, active
+state, renderer visibility, Animator enabled state, culling or root motion.
+The current Voss/Wrag objects have only Transform, SpriteRenderer and Animator
+components; their clips contain sprite keys and no float/Transform curves.
 
-The Toolkit actor images independently follow their own GameObject's Transform:
-`Voss_Idle` controls the player and `Wrag_Idle` controls the enemy. Position,
-scale (including mirroring), and Z rotation update even when the GameObjects
-are inactive or the animation option is off. Their targeting areas follow the
-images. The fixed `Battlefield World Bounds` rectangle maps world coordinates
-onto the background's centered cover layout; neither actor is a reference for
-the other. Matching the sprites' world-space foot heights aligns their ground.
+Main Camera is the rendering camera. Raycast Camera's Camera component is
+manually disabled in the scene to prevent an additional perspective render over
+Main Camera. Its existing reference and ScreenPointToRay input use remain valid.
+The original root Canvas component is also manually disabled to avoid duplicate
+legacy HUD/card rendering behind the transparent Toolkit HUD. Its GameObject,
+children, scripts and references remain active. To use the old HUD, disable the
+Toolkit root and enable that Canvas component manually.
 
-The existing game has no currency, energy pool, discard pile, journal, map
-navigation, or intent API. Reference-only values do not become new game state;
-unavailable live values display a dash and preview intent is hidden in live mode.
-The gear opens UI display options, and the book/hand buttons focus the hand.
+## Optional animation controls
 
-Only two compatibility additions were made outside this folder:
+The UI component's custom Inspector still offers Transform fields, a Sprite
+object field, Frame in Scene and an explicit edit-mode sprite-sequence preview.
+These edit the real object only when you change a field or press Play Preview.
+Stopping preview restores its temporary sprite, without restoring Transforms.
+You can use the ordinary Transform Inspector instead.
 
-- `GameHandler.SelectedCard`: read-only access to the existing selection.
-- `InputHandler.IsPointerInputBlocked`: an optional callback that prevents world
-  raycasts while the full-screen Toolkit view owns input. Disabling the view
-  unsubscribes the callback and restores the original input path.
+The gear panel's Character Animations list is optional. A binding adds a button
+which restarts an already enabled Animator only when clicked. It does not enable
+an inactive object or change any visibility/settings. Restart Idle similarly
+restarts the configured idle Animators only when clicked. Public
+PlayHeroAnimation and PlayCharacterAnimation methods remain explicit hooks.
 
-The adapter deliberately delegates to existing Canvas `Card` instances. During
-the later Canvas removal, migrate that selection API and card creation first;
-removing those instances now would remove the existing gameplay selection path.
+## Gameplay HUD
+
+GameView.uxml and GameView.uss define the screen. Components/HandCard.uxml is the
+card template. GameViewPanelSettings uses a 1672 x 941 reference resolution and
+sorting order 100 above the camera image. The HUD layout supports compact,
+narrow and portrait sizes, a scrolling hand and an options overlay.
+
+The gameplay Player and opponents were inactive in this scene. DESIGN PREVIEW
+therefore uses reference hand/status values. When an existing player initializes,
+the view reads currentHand, subscribes to status events and delegates card
+selection/targeting to existing Card and InputHandler instances. It does not
+create a new turn system or game state. A 100 ms schedule detects hand changes;
+target geometry reads the actual camera and renderer bounds each frame.
+
+GameHandler.SelectedCard and InputHandler.IsPointerInputBlocked remain the
+compatibility hooks. Disabling the Toolkit unsubscribes its callbacks. Reference
+currency, energy and intent values remain separate from live gameplay data.
 
 ## Verification
 
-Verified in Unity 6000.6.4f1, including Play Mode and composited Game View captures:
-
-- 1920 × 1080, 1280 × 1024, 2560 × 1080, and 900 × 1200 layouts.
-- Six-card live hand, distinct repeated-card selection, self-targeted Heal
-  (16 → 26 HP; label `26/30`), selection clearing, empty live hand, and turn gating.
-- Options opening/closing, Toolkit disable/re-enable, Canvas fallback, and input
-  gate release/re-registration.
-- Compilation, UXML/USS import, and referenced assets.
-- Scene serialization comparison against the scene at the start of this task.
-
-No new UI compilation, parsing, or runtime errors remain. Existing DOTween
-PluginImporter version warnings and a Visual Scripting package exception
-(`84 node options failed to load`) were observed separately and are not hidden
-or changed by this implementation.
-
-Screenshots and the preservation report are under `Documentation/CrimsonDoomUI`.
-The explicit editor menu `Crimson Doom > UI Toolkit > Install in GameView` can
-install the view in a copy of GameView that does not already contain its root.
-It does not run automatically or touch Canvas objects.
+See Documentation/CrimsonDoomUI/Visibility/ManualSceneRendering.md for the current
+Play Mode checks and screenshot. Earlier visibility reports describe superseded
+approaches and are retained only as historical evidence.
