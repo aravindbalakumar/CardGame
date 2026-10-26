@@ -82,14 +82,12 @@
                 <ui:Button name="end-turn" text="End Turn" class="end-turn" tooltip="Requires an active, initialized gameplay hand." />
                 <ui:VisualElement class="pile-row">
                     <ui:Button name="draw-pile" class="pile" tooltip="View current hand">
-                        <ui:Label text="HAND" class="eyebrow" />
-                        <ui:VisualElement class="deck-stack" picking-mode="Ignore"><ui:VisualElement class="deck-stack-inner" picking-mode="Ignore" /></ui:VisualElement>
-                        <ui:Label name="hand-count" text="5" class="pile-count" />
+                        <ui:VisualElement class="deck-stack" picking-mode="Ignore"><ui:VisualElement class="deck-stack-inner" picking-mode="Ignore" /><ui:VisualElement class="deck-stack-front" picking-mode="Ignore" /></ui:VisualElement>
+                        <ui:Label name="hand-count" text="12" class="pile-count" />
                     </ui:Button>
                     <ui:VisualElement class="pile unavailable" tooltip="No discard pile exists in the current gameplay API.">
-                        <ui:Label text="DISCARD" class="eyebrow" />
-                        <ui:Label text="—" class="pile-symbol" />
-                        <ui:Label name="discard-count" text="—" class="pile-count" />
+                        <ui:VisualElement class="discard-bin" picking-mode="Ignore"><ui:VisualElement class="bin-rim" /><ui:VisualElement class="bin-line bin-line-left" /><ui:VisualElement class="bin-line" /><ui:VisualElement class="bin-line bin-line-right" /></ui:VisualElement>
+                        <ui:Label name="discard-count" text="0" class="pile-count" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
@@ -97,11 +95,11 @@
         <ui:VisualElement name="options-panel" class="options-panel hidden">
             <ui:Label text="Crimson Doom" class="panel-title" />
             <ui:Label text="CHARACTER ANIMATIONS" class="eyebrow" />
-            <ui:Label name="animation-status" text="Scene objects control visibility and playback" class="animation-status" />
+            <ui:Label name="animation-status" text="Choose an animation to preview" class="animation-status" />
             <ui:ScrollView name="animation-buttons" mode="Vertical" vertical-scroller-visibility="Auto" class="animation-buttons" />
             <ui:Button name="stop-animation-preview" text="Restart Idle" class="panel-button" />
             <ui:Label text="Scene rendering" class="eyebrow options-section" />
-            <ui:Label text="Characters render directly from the scene. Edit their Transform, SpriteRenderer and Animator in the Inspector." class="options-help" />
+            <ui:Label text="Edit character Transforms, SpriteRenderers and Animators in the Inspector. Animation previews restore the original pose visibility when finished." class="options-help" />
             <ui:Button name="close-options" text="Close" class="panel-button" />
         </ui:VisualElement>
     </ui:VisualElement>

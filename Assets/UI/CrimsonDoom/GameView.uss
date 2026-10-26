@@ -6,7 +6,7 @@
     flex-grow: 1;
     background-color: rgba(0, 0, 0, 0);
     color: var(--gold);
-    -unity-font-definition: url("../../Font/Font asset/CinzelDecorative-Bold.ttf");
+    -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf");
     font-size: 20px;
 }
 .top-bar { height: 62px; flex-shrink: 0; flex-direction: row; align-items: center; padding: 5px 20px 5px 10px; background-size: 100% 100%; }
@@ -16,11 +16,11 @@
 .stat-text { font-size: 25px; }
 .spacer { flex-grow: 1; }
 .eyebrow { font-size: 10px; letter-spacing: 2px; color: var(--muted); -unity-text-align: middle-center; }
-.preview-label { margin-right: 20px; opacity: 0.7; }
+.preview-label { display: none; }
 .nav-button { width: 44px; height: 44px; margin: 0 4px; padding: 0; border-width: 0; background-color: rgba(0, 0, 0, 0); background-size: contain; background-repeat: no-repeat; background-position: center; }
 .nav-button:hover { -unity-background-image-tint-color: rgb(255, 219, 158); scale: 1.08 1.08; }
 .nav-button:active { scale: 0.96 0.96; }
-.nav-button:disabled { opacity: 0.6; }
+.nav-button:disabled { opacity: 1; }
 .arena { flex-grow: 1; min-height: 0; flex-direction: row; padding-right: 28px; }
 .inventory { position: absolute; top: 12px; left: 14px; flex-direction: row; align-items: center; height: 55px; }
 .inventory-icon { width: 49px; height: 49px; margin-right: 13px; }
@@ -40,9 +40,9 @@
 .attack-icon { width: 61px; height: 57px; margin-right: 9px; }
 .turn-badge { border-width: 2px; border-color: rgb(89, 72, 49); border-radius: 22px; width: 43px; height: 43px; -unity-text-align: middle-center; font-size: 21px; background-color: rgba(8, 10, 12, 0.9); }
 .parchment { background-size: 100% 100%; color: var(--ink); }
-.intent-note { min-height: 82px; white-space: normal; font-size: 14px; -unity-text-align: middle-center; padding: 13px 9px; margin: 3px 0; -unity-font-definition: url("../../TextMesh Pro/Fonts/LiberationSans.ttf"); -unity-font-style: bold; }
+.intent-note { min-height: 82px; white-space: normal; font-size: 14px; -unity-text-align: middle-center; padding: 13px 9px; margin: 3px 0; -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf"); -unity-font-style: bold; }
 .special-note { min-height: 104px; }
-.bottom-area { height: 275px; flex-shrink: 0; flex-direction: row; padding: 0 28px 5px 32px; background-color: rgba(0, 0, 0, 0.78); }
+.bottom-area { height: 275px; flex-shrink: 0; flex-direction: row; padding: 0 28px 5px 32px; background-color: rgba(0, 0, 0, 0.30); }
 .player-status { width: 21%; padding-top: 12px; align-items: flex-start; }
 .player-health-track { width: 200px; height: 24px; }
 .block-row { flex-direction: row; align-items: center; margin-top: 5px; }
@@ -68,24 +68,24 @@
 .hand-card:active { scale: 0.98 0.98; }
 .hand-card.selected { translate: 0 -19px; border-width: 2px; border-color: rgb(226, 184, 102); }
 .hand-card:disabled { opacity: 0.48; }
-.hand-card.preview-card { -unity-background-image-tint-color: rgb(225, 211, 193); }
+.hand-card.preview-card { -unity-background-image-tint-color: rgb(255, 255, 255); }
 .card-art { position: absolute; left: 11%; top: 16%; width: 78%; height: 45%; }
 .card-frame { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
 .card-title { position: absolute; left: 18%; right: 7%; top: 4%; height: 11%; font-size: 16px; background-color: rgb(60, 38, 22); -unity-text-align: middle-center; }
 .card-cost { position: absolute; left: 5%; top: 3%; width: 17%; height: 12%; font-size: 22px; -unity-text-align: middle-center; background-color: rgb(60, 38, 22); border-radius: 16px; }
-.card-description { position: absolute; left: 11%; right: 10%; top: 66%; bottom: 8%; white-space: normal; -unity-text-align: middle-center; color: var(--ink); font-size: 14px; -unity-font-definition: url("../../TextMesh Pro/Fonts/LiberationSans.ttf"); }
+.card-description { position: absolute; left: 11%; right: 10%; top: 66%; bottom: 8%; white-space: normal; -unity-text-align: middle-center; color: var(--ink); font-size: 14px; -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf"); }
 .preview-card .card-title, .preview-card .card-cost, .preview-card .card-art { display: none; }
 .controls { width: 18%; flex-shrink: 0; justify-content: flex-end; padding: 0 10px 12px 25px; }
 .end-turn { height: 80px; margin: 0 0 18px 0; padding: 0; background-color: rgba(0, 0, 0, 0); background-size: 100% 100%; border-width: 0; color: var(--gold); font-size: 27px; -unity-text-align: middle-center; }
 .end-turn:hover { -unity-background-image-tint-color: rgb(255, 220, 161); color: rgb(255, 221, 171); }
 .end-turn:active { scale: 0.97 0.97; }
-.end-turn:disabled { opacity: 0.66; }
+.end-turn:disabled { opacity: 1; }
 .pile-row { flex-direction: row; justify-content: space-between; }
 .pile { flex-grow: 1; height: 93px; margin: 0 3px; padding: 8px; border-width: 2px; border-color: rgb(77, 64, 47); border-radius: 4px; background-color: rgb(11, 12, 14); align-items: center; }
 .pile:hover { border-color: var(--gold); }
 .pile-symbol { font-size: 28px; color: var(--muted); }
 .pile-count { position: absolute; right: 8px; bottom: 2px; font-size: 24px; }
-.unavailable { opacity: 0.6; }
+.unavailable { opacity: 1; }
 .actor-target { position: absolute; bottom: 4%; width: 64%; height: 55%; background-color: rgba(0, 0, 0, 0); border-width: 0; margin: 0; padding: 0; }
 .self-target { right: 4%; }
 .enemy-target { right: 0; width: 90%; }
@@ -95,9 +95,9 @@
 .active-player .energy-orb { border-color: rgb(132, 119, 92); }
 .options-panel { position: absolute; right: 30px; top: 72px; width: 340px; max-height: 78%; padding: 24px; background-color: rgb(12, 15, 18); border-width: 1px; border-color: var(--gold); border-radius: 6px; }
 .panel-title { font-size: 24px; margin-bottom: 12px; }
-.options-help { white-space: normal; font-size: 14px; margin: 14px 0; -unity-font-definition: url("../../TextMesh Pro/Fonts/LiberationSans.ttf"); }
+.options-help { white-space: normal; font-size: 14px; margin: 14px 0; -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf"); }
 .panel-button { height: 34px; color: var(--gold); background-color: rgb(43, 31, 22); border-color: var(--muted); }
-.animation-status { font-size: 13px; margin: 7px 0; -unity-font-definition: url("../../TextMesh Pro/Fonts/LiberationSans.ttf"); }
+.animation-status { font-size: 13px; margin: 7px 0; -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf"); }
 .animation-buttons { max-height: 250px; margin-bottom: 8px; }
 .animation-choice { min-height: 34px; flex-shrink: 0; margin: 2px 0; color: var(--gold); background-color: rgb(24, 23, 21); border-color: rgb(77, 64, 47); -unity-text-align: middle-left; }
 .animation-choice:hover { border-color: var(--gold); background-color: rgb(43, 31, 22); }
@@ -171,3 +171,67 @@
 .health-fill { background-image: url("project://database/Assets/Sprites/UI/wmremove-transformed%201.png?fileID=2108726151&guid=c62900b22a88976428ebb01509d9ebf8&type=3#wmremove-transformed%201_10"); }
 .block-icon { background-image: url("project://database/Assets/Sprites/UI/wmremove-transformed%201.png?fileID=-754423547&guid=c62900b22a88976428ebb01509d9ebf8&type=3#wmremove-transformed%201_24"); }
 .end-turn { background-image: url("project://database/Assets/Sprites/UI/wmremove-transformed%201.png?fileID=-1907696705&guid=c62900b22a88976428ebb01509d9ebf8&type=3#wmremove-transformed%201_12"); }
+
+/* Reference artboard: 1672 x 941. PanelSettings scales these logical units. */
+.game-root { --gold: rgb(205, 173, 127); }
+.top-bar { height: 62px; padding: 5px 64px 5px 15px; -unity-background-image-tint-color: rgb(92, 89, 83); }
+.portrait { width: 48px; height: 48px; margin-right: 35px; -unity-background-image-tint-color: rgb(184, 174, 151); }
+.heart { width: 38px; height: 38px; -unity-background-image-tint-color: rgb(179, 142, 122); }
+.health-text { font-size: 28px; margin-right: 30px; }
+.currency { width: 28px; height: 39px; -unity-background-image-tint-color: rgb(210, 103, 62); }
+.nav-button { width: 42px; height: 42px; margin: 0 4px; -unity-background-image-tint-color: rgb(171, 160, 139); }
+.inventory { top: 10px; left: 18px; height: 52px; }
+.inventory-icon { width: 47px; height: 51px; margin-right: 15px; -unity-background-image-tint-color: rgb(184, 170, 145); }
+.arena { padding-right: 36px; }
+.intent-column { width: 162px; margin-left: 0; padding-top: 9px; padding-bottom: 0; }
+.map { width: 162px; height: 122px; }
+.enemy-status { top: 3px; right: 0; width: 194px; }
+.enemy-crest { width: 92px; height: 91px; -unity-background-image-tint-color: rgb(166, 153, 131); }
+.enemy-name { font-size: 24px; height: 29px; margin: 0; padding: 0; }
+.health-track { height: 21px; border-width: 0; border-radius: 0; background-color: rgba(0, 0, 0, 0); overflow: visible; }
+.health-fill { background-color: rgba(0, 0, 0, 0); -unity-slice-left: 0; -unity-slice-right: 0; -unity-slice-top: 0; -unity-slice-bottom: 0; -unity-background-image-tint-color: rgb(216, 115, 85); }
+.health-value { font-size: 24px; }
+.intent-heading { height: 72px; }
+.attack-icon { width: 62px; height: 56px; -unity-background-image-tint-color: rgb(190, 165, 130); }
+.intent-note { font-size: 17px; -unity-font-style: normal; padding: 12px 8px; margin: 3px 0; min-height: 82px; }
+.special-note { min-height: 104px; }
+.turn-badge { border-color: rgb(73, 67, 54); font-size: 24px; }
+.bottom-area { height: 275px; padding: 0 68px 0 32px; }
+.player-status { width: 334px; flex-shrink: 0; padding-top: 19px; }
+.player-health-track { width: 198px; height: 21px; }
+.block-row { margin-top: 3px; }
+.block-icon { width: 33px; height: 36px; }
+.block-text { font-size: 25px; }
+.energy-orb { margin: 19px 0 0 38px; width: 116px; height: 116px; border-width: 6px; border-color: rgb(91, 91, 82); background-color: rgb(5, 36, 47); }
+.active-player .energy-orb { border-color: rgb(115, 108, 92); }
+.orb-rim { border-width: 3px; border-color: rgb(44, 44, 42); border-top-color: rgb(157, 148, 127); border-bottom-color: rgb(94, 88, 75); }
+.orb-inner { border-color: rgb(19, 62, 72); border-bottom-color: rgb(7, 27, 35); }
+.energy-value { font-size: 48px; }
+.energy-caption { width: 192px; font-size: 24px; }
+.hand { padding-top: 11px; padding-bottom: 3px; }
+.hand-region { margin-right: 30px; }
+.hand-card { width: 180px; height: 254px; min-width: 110px; margin: 0 -1px; }
+.card-description { top: 68%; bottom: 8%; font-size: 15px; padding: 0 4px; }
+.controls { width: 254px; padding: 0 0 23px 0; }
+.end-turn { height: 81px; margin-bottom: 19px; font-size: 31px; -unity-slice-scale: 0.5; }
+.pile-row { height: 98px; }
+.pile { width: 117px; height: 98px; flex-basis: 117px; flex-grow: 0; flex-shrink: 1; min-width: 0; margin: 0 5px; border-width: 2px; border-color: rgb(71, 64, 52); background-color: rgba(7, 9, 10, 0.82); border-radius: 5px; }
+.pile-count { font-size: 27px; right: 8px; bottom: 4px; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(0, 0, 0); }
+.deck-stack { width: 38px; height: 52px; margin: 10px 12px 0 0; border-color: rgb(111, 103, 83); rotate: -20deg; background-color: rgb(20, 21, 20); }
+.deck-stack-inner { left: 8px; top: -4px; width: 38px; height: 52px; rotate: 12deg; border-color: rgb(100, 92, 75); background-color: rgb(29, 28, 24); }
+.deck-stack-front { position: absolute; left: 16px; top: -3px; width: 38px; height: 52px; rotate: 25deg; border-width: 2px; border-color: rgb(100, 92, 75); background-color: rgb(27, 26, 23); }
+.discard-bin { width: 35px; height: 46px; margin-top: 17px; border-width: 3px; border-top-width: 2px; border-color: rgb(105, 101, 88); border-bottom-color: rgb(66, 64, 56); border-radius: 4px 4px 12px 12px; background-color: rgb(27, 28, 26); }
+.bin-rim { position: absolute; top: -7px; left: -7px; right: -7px; height: 9px; border-radius: 50%; border-width: 2px; border-color: rgb(117, 108, 91); background-color: rgb(14, 15, 14); }
+.bin-line { position: absolute; top: 5px; bottom: 5px; left: 45%; width: 2px; background-color: rgb(95, 91, 78); }
+.bin-line-left { left: 20%; rotate: -5deg; }
+.bin-line-right { left: 72%; rotate: 5deg; }
+
+/* Wider/taller panels retain the established hierarchy; small panels reflow. */
+.compact .player-status { width: 20%; }
+.compact .hand-region { margin-right: 15px; }
+.compact .controls { width: 19%; padding-left: 8px; }
+.narrow .player-status { width: 19%; }
+.narrow .hand-region { margin-right: 8px; }
+.narrow .controls { width: 20%; }
+.portrait-layout .player-status { width: 28%; }
+.portrait-layout .controls { width: 100%; }

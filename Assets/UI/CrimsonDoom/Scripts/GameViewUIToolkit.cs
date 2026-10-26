@@ -63,6 +63,8 @@ namespace CrimsonDoom.UI
         private SpriteRenderer activeEnemyRenderer;
         private int legacyChildCount;
         private bool animationControlsDirty;
+        private readonly Dictionary<GameObject, bool> animationVisibility = new Dictionary<GameObject, bool>();
+        private Coroutine animationPreview;
 
         private bool HasLiveGame => Application.isPlaying && localPlayer != null &&
             localPlayer.isActiveAndEnabled && !string.IsNullOrEmpty(localPlayer.playerID) && localPlayer.currentHand != null;
@@ -148,6 +150,7 @@ namespace CrimsonDoom.UI
 
         private void OnDisable()
         {
+            RestoreAnimationVisibility();
             refreshTask?.Pause();
             refreshTask = null;
             if (!initialized) return;
@@ -292,7 +295,8 @@ namespace CrimsonDoom.UI
                     button.clicked += () => SelectCard(index);
                 }
             }
-            SetText(handCount, count.ToString());
+            SetText(handCount, showingPreview ? "12" : count.ToString());
+            SetText(root.Q<Label>("discard-count"), showingPreview ? "0" : "—");
         }
 
         private void InspectPreview(int index)
@@ -422,17 +426,55 @@ namespace CrimsonDoom.UI
         {
             if (!Application.isPlaying || binding.renderer == null) return;
             var animator = binding.animator != null ? binding.animator : binding.renderer.GetComponent<Animator>();
-            if (!binding.renderer.gameObject.activeInHierarchy || animator == null || !animator.isActiveAndEnabled ||
+            if (animator == null || !animator.enabled ||
                 animator.runtimeAnimatorController == null)
             {
-                SetText(animationStatus, "Enable the object and assign an enabled Animator in the Inspector.");
+                SetText(animationStatus, "Assign an enabled Animator in the Inspector.");
                 return;
             }
-            // Explicit button/API action only. Never enable, move, resize, rebind or recull an object.
+            RestoreAnimationVisibility();
+            // Pose objects are authored separately in this scene. Show exactly one pose per slot,
+            // preserving every authored Transform and restoring visibility after playback.
+            var idle = binding.characterSlot == CharacterSlot.Hero ? heroRenderer : enemyRenderer;
+            RememberVisibility(idle);
+            foreach (var pose in characterAnimations)
+                if (pose != null && pose.characterSlot == binding.characterSlot) RememberVisibility(pose.renderer);
+            RememberVisibility(binding.renderer);
+            foreach (var entry in animationVisibility)
+                if (entry.Key != null) entry.Key.SetActive(entry.Key == binding.renderer.gameObject);
             animator.Play(0, 0, 0);
             if (binding.characterSlot == CharacterSlot.Hero) activeHeroRenderer = binding.renderer;
             else activeEnemyRenderer = binding.renderer;
-            SetText(animationStatus, binding.characterName + " / " + binding.animationName + " restarted");
+            SetText(animationStatus, binding.characterName + " / " + binding.animationName);
+            if (binding.renderer != idle)
+            {
+                var clips = animator.runtimeAnimatorController.animationClips;
+                float duration = clips.Length > 0 ? clips[0].length / Mathf.Max(0.01f, Mathf.Abs(animator.speed)) : 1f;
+                animationPreview = StartCoroutine(RestoreAfterAnimation(duration));
+            }
+        }
+
+        private void RememberVisibility(SpriteRenderer renderer)
+        {
+            if (renderer != null && !animationVisibility.ContainsKey(renderer.gameObject))
+                animationVisibility.Add(renderer.gameObject, renderer.gameObject.activeSelf);
+        }
+
+        private System.Collections.IEnumerator RestoreAfterAnimation(float duration)
+        {
+            yield return new WaitForSecondsRealtime(duration);
+            animationPreview = null;
+            RestoreAnimationVisibility();
+        }
+
+        private void RestoreAnimationVisibility()
+        {
+            if (animationPreview != null) { StopCoroutine(animationPreview); animationPreview = null; }
+            foreach (var entry in animationVisibility)
+                if (entry.Key != null) entry.Key.SetActive(entry.Value);
+            animationVisibility.Clear();
+            activeHeroRenderer = heroRenderer;
+            activeEnemyRenderer = enemyRenderer;
         }
 
         private void BuildAnimationControls()
@@ -483,6 +525,7 @@ namespace CrimsonDoom.UI
         private void StopAnimationPreview()
         {
             if (!Application.isPlaying) return;
+            RestoreAnimationVisibility();
             activeHeroRenderer = heroRenderer;
             activeEnemyRenderer = enemyRenderer;
             foreach (var renderer in new[] { heroRenderer, enemyRenderer })

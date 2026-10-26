@@ -1,0 +1,11 @@
+Play Mode: True
+Resolution: 1672x941
+UIDocuments: 1
+Enabled Canvas renderers: 0
+Hand cards: 5
+end-turn: (x:1350.00, y:720.00, width:254.00, height:81.00) inside viewport=True
+draw-pile: (x:1355.00, y:820.00, width:117.00, height:98.00) inside viewport=True
+player-status: (x:32.00, y:666.00, width:334.00, height:275.00) inside viewport=True
+intent-preview: (x:1474.00, y:299.00, width:162.00, height:367.00) inside viewport=True
+hand: (x:366.00, y:673.00, width:954.00, height:268.00) inside viewport=True
+Animation controls: 4
