@@ -96,7 +96,7 @@
       }
     },
     "com.unity.dt.app-ui": {
-      "version": "2.2.4",
+      "version": "2.1.13",
       "depth": 1,
       "source": "registry",
       "dependencies": {
@@ -161,7 +161,7 @@
       "dependencies": {}
     },
     "com.unity.multiplayer.center": {
-      "version": "2.1.0",
+      "version": "2.0.1",
       "depth": 0,
       "source": "builtin",
       "dependencies": {

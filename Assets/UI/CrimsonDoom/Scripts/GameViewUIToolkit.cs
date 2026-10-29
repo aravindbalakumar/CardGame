@@ -12,7 +12,7 @@ namespace CrimsonDoom.UI
     [ExecuteAlways]
     [RequireComponent(typeof(UIDocument))]
     [DefaultExecutionOrder(100)]
-    public sealed class GameViewUIToolkit : MonoBehaviour
+    public sealed partial class GameViewUIToolkit : MonoBehaviour
     {
         private enum CharacterSlot
         {
@@ -40,11 +40,37 @@ namespace CrimsonDoom.UI
         [SerializeField] private List<CharacterAnimationBinding> characterAnimations = new List<CharacterAnimationBinding>();
         [SerializeField] private VisualTreeAsset cardTemplate;
         [SerializeField] private Sprite[] previewCardSprites;
-        private static readonly string[] PreviewDescriptions =
+        [SerializeField, HideInInspector] private Sprite[] folderCardSprites;
+        private const int PreviewCardCount = 5;
+        private readonly List<Sprite> previewHand = new List<Sprite>();
+        private readonly System.Random cardRandom = new System.Random();
+
+#if UNITY_EDITOR
+        public static Sprite[] DiscoverCardSprites()
         {
-            "Deal 10 damage.", "Return a fallen\nally to 50% HP.", "Deal 10 damage.",
-            "Heal 10 HP.", "Gain 3 Block\nand 1 Strength."
-        };
+            var sprites = new List<Sprite>();
+            var paths = new List<string>();
+            foreach (var guid in UnityEditor.AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/Sprites/Cards" }))
+                paths.Add(UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+            paths.Sort(System.StringComparer.Ordinal);
+            foreach (var path in paths)
+                foreach (var asset in UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path))
+                    if (asset is Sprite sprite) sprites.Add(sprite);
+            return sprites.ToArray();
+        }
+
+        private void ReloadCardSprites()
+        {
+            var sprites = DiscoverCardSprites();
+            bool changed = folderCardSprites == null || sprites.Length != folderCardSprites.Length;
+            for (int i = 0; !changed && i < sprites.Length; i++)
+                changed = sprites[i] != folderCardSprites[i];
+            if (!changed) return;
+            folderCardSprites = sprites;
+            previewHand.Clear();
+            if (initialized) RefreshHand();
+        }
+#endif
 
         private readonly List<CardTypeScriptableObject> displayedHand = new List<CardTypeScriptableObject>();
         private readonly List<Button> cardButtons = new List<Button>();
@@ -72,6 +98,9 @@ namespace CrimsonDoom.UI
         private void OnEnable()
         {
             if (initialized) return;
+#if UNITY_EDITOR
+            ReloadCardSprites();
+#endif
             var documentRoot = GetComponent<UIDocument>().rootVisualElement;
             if (documentRoot == null)
             {
@@ -127,6 +156,9 @@ namespace CrimsonDoom.UI
             }
             showingPreview = !HasLiveGame;
             initialized = true;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.projectChanged += ReloadCardSprites;
+#endif
             activeHeroRenderer = heroRenderer;
             activeEnemyRenderer = enemyRenderer;
             RefreshFromGame(true);
@@ -150,6 +182,11 @@ namespace CrimsonDoom.UI
 
         private void OnDisable()
         {
+            CancelCombatSequence();
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.projectChanged -= ReloadCardSprites;
+#endif
+            previewHand.Clear();
             RestoreAnimationVisibility();
             refreshTask?.Pause();
             refreshTask = null;
@@ -177,7 +214,11 @@ namespace CrimsonDoom.UI
         // Read-only projection for targeting. Scene objects and their Animators own rendering.
         private void LateUpdate()
         {
-            if (initialized) RefreshActorPlacement();
+            if (initialized)
+            {
+                UpdateCombatRecovery();
+                RefreshActorPlacement();
+            }
         }
 
         private void OnSystemsInitialized() => root.schedule.Execute(() => RefreshFromGame(true));
@@ -260,7 +301,22 @@ namespace CrimsonDoom.UI
             if (cardTemplate == null) return;
             if (!showingPreview && legacyCardParent != null)
                 legacyCardParent.GetComponentsInChildren(false, legacyCards);
-            int count = showingPreview ? previewCardSprites.Length : localPlayer.currentHand.Count;
+            if (showingPreview && previewHand.Count == 0 && folderCardSprites != null)
+            {
+                var pool = new List<Sprite>(folderCardSprites);
+                pool.RemoveAll(sprite => sprite == null);
+                while (previewHand.Count < PreviewCardCount && pool.Count > 0)
+                {
+                    var remaining = new List<Sprite>(pool);
+                    while (previewHand.Count < PreviewCardCount && remaining.Count > 0)
+                    {
+                        int index = cardRandom.Next(remaining.Count);
+                        previewHand.Add(remaining[index]);
+                        remaining.RemoveAt(index);
+                    }
+                }
+            }
+            int count = showingPreview ? previewHand.Count : localPlayer.currentHand.Count;
             for (int i = 0; i < count; i++)
             {
                 var tree = cardTemplate.CloneTree();
@@ -273,10 +329,9 @@ namespace CrimsonDoom.UI
                 if (showingPreview)
                 {
                     button.AddToClassList("preview-card");
-                    button.Q<Image>("card-frame").sprite = previewCardSprites[i];
-                    button.Q<Label>("card-description").text = PreviewDescriptions[i % PreviewDescriptions.Length];
-                    button.tooltip = "Design preview — activate gameplay to use cards.";
-                    // Preview cards may be inspected and focused, but never execute game actions.
+                    button.Q<Image>("card-frame").sprite = previewHand[i];
+                    button.tooltip = "Select, then click Wrag to preview the spell sequence.";
+                    // Preview combat animates the scene without changing gameplay stats.
                     int index = i;
                     button.clicked += () => InspectPreview(index);
                 }
@@ -295,14 +350,16 @@ namespace CrimsonDoom.UI
                     button.clicked += () => SelectCard(index);
                 }
             }
-            SetText(handCount, showingPreview ? "12" : count.ToString());
+            SetText(handCount, count.ToString());
             SetText(root.Q<Label>("discard-count"), showingPreview ? "0" : "—");
         }
 
         private void InspectPreview(int index)
         {
+            if (CombatSequenceRunning) return;
+            previewSelectedIndex = index;
             for (int i = 0; i < cardButtons.Count; i++) cardButtons[i].EnableInClassList("selected", i == index);
-            SetText(hint, "Design preview · gameplay is inactive");
+            RefreshAvailability();
         }
 
         private Card FindLegacyCard(int index)
@@ -318,7 +375,7 @@ namespace CrimsonDoom.UI
 
         private void SelectCard(int index)
         {
-            if (showingPreview || !turnAvailable || gameHandler == null) return;
+            if (CombatSequenceRunning || showingPreview || !turnAvailable || gameHandler == null) return;
             var legacyCard = FindLegacyCard(index);
             if (legacyCard == null) return;
             // Uses the original selection/targeting path, including its existing highlights.
@@ -329,35 +386,65 @@ namespace CrimsonDoom.UI
 
         private void RefreshAvailability()
         {
-            bool ready = !showingPreview && turnAvailable && gameHandler != null && localPlayer.Health > 0;
+            bool ready = !CombatSequenceRunning && !showingPreview && turnAvailable && gameHandler != null && localPlayer.Health > 0;
             endTurn.SetEnabled(ready);
             playerStatus.EnableInClassList("active-player", showingPreview || ready);
             playerStatus.EnableInClassList("inactive-player", !showingPreview && !ready);
             bool selected = ready && selectedCard != null && selectedCard.cardData != null;
             selfTarget.SetEnabled(selected && selectedCard.cardTargetGroup.HasFlag(TargetGroup.self));
             enemyTarget.SetEnabled(selected && opponent != null && opponent.isActiveAndEnabled && selectedCard.cardTargetGroup.HasFlag(TargetGroup.others));
+            if (showingPreview)
+                enemyTarget.SetEnabled(Application.isPlaying && !CombatSequenceRunning && previewSelectedIndex >= 0);
             for (int i = 0; i < cardButtons.Count; i++)
             {
-                if (showingPreview) continue;
+                if (showingPreview)
+                {
+                    cardButtons[i].SetEnabled(!CombatSequenceRunning);
+                    cardButtons[i].EnableInClassList("selected", i == previewSelectedIndex);
+                    continue;
+                }
                 var card = FindLegacyCard(i);
                 cardButtons[i].SetEnabled(ready && card != null);
                 cardButtons[i].EnableInClassList("selected", card != null && card == selectedCard);
             }
             if (!showingPreview) SetText(hint, selected ? "Choose a target" : "");
+            else SetText(hint, previewSelectedIndex >= 0 ? "Click Wrag to cast" : "");
+            if (CombatSequenceRunning) SetText(hint, "Casting…");
         }
 
-        private void TargetSelf() => Target(localPlayer);
-        private void TargetOpponent() => Target(opponent);
+        private void TargetSelf()
+        {
+            if (!CombatSequenceRunning) Target(localPlayer);
+        }
+        private void TargetOpponent()
+        {
+            if (!Application.isPlaying || CombatSequenceRunning) return;
+            if (showingPreview)
+            {
+                if (previewSelectedIndex >= 0) BeginCombatSequence(null);
+                return;
+            }
+            if (selectedCard == null || !turnAvailable || opponent == null || !opponent.isActiveAndEnabled ||
+                !selectedCard.cardTargetGroup.HasFlag(TargetGroup.others)) return;
+            var target = opponent;
+            var card = selectedCard;
+            BeginCombatSequence(() =>
+            {
+                if (gameHandler != null && gameHandler.SelectedCard == card && selectedCard == card)
+                    Target(target);
+            });
+        }
         private void Target(Player target)
         {
-            if (showingPreview || !turnAvailable || target == null || selectedCard == null) return;
+            if (showingPreview || !turnAvailable || target == null || selectedCard == null ||
+                gameHandler == null || gameHandler.inputHandler == null) return;
             // The existing handler owns card effects and turn completion.
             gameHandler.inputHandler.OnRaycastHit.Invoke(target.gameObject);
         }
 
         private void EndTurn()
         {
-            if (!HasLiveGame || !turnAvailable) return;
+            if (CombatSequenceRunning || !HasLiveGame || !turnAvailable) return;
             localPlayer.OnTurnEnd();
             if (gameHandler.SelectedCard != null) gameHandler.UpdateSelectedCard(gameHandler.SelectedCard);
             selectedCard = null;
@@ -424,6 +511,7 @@ namespace CrimsonDoom.UI
 
         private void PlayCharacterAnimation(CharacterAnimationBinding binding)
         {
+            if (CombatSequenceRunning) return;
             if (!Application.isPlaying || binding.renderer == null) return;
             var animator = binding.animator != null ? binding.animator : binding.renderer.GetComponent<Animator>();
             if (animator == null || !animator.enabled ||
@@ -524,6 +612,7 @@ namespace CrimsonDoom.UI
 
         private void StopAnimationPreview()
         {
+            if (CombatSequenceRunning) return;
             if (!Application.isPlaying) return;
             RestoreAnimationVisibility();
             activeHeroRenderer = heroRenderer;
