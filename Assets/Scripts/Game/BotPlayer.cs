@@ -24,12 +24,13 @@ namespace Game
         {
             _agent.Graph.Start();
         }
-        public void FetchAndUseCard(ActionType incomingType, System.Action OnSuccess, System.Action OnFail)
+
+        public void UseSkill(Skill skill,AbstractActor target)
         {
-         
+            
         }
 
-        public override void StartTurn()
+    public override void StartTurn()
         {
             _agent.BlackboardReference.SetVariableValue("isMyTurn", "true");
         }
