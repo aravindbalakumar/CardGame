@@ -15,7 +15,7 @@ namespace Game
         {
             get
             {
-                return cardBehaviourAndData.targetGroup;
+                return cardBehaviourAndData.skill.targetGroup;
             }
             private set
             {
@@ -43,7 +43,7 @@ namespace Game
         {
             Debug.Log("CARD IS SELECTED");
             this.transform.localScale = Vector3.one * 1.1f;
-            GameHandler.instance.UpdateSelectedCard(this);
+            GameHandler.instance.player.UpdateSelectedCard(this);
         }
         public void DeselectCard()
         {

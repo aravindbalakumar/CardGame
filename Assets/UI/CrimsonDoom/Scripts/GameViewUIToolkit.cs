@@ -31,8 +31,8 @@ namespace CrimsonDoom.UI
         }
 
         [SerializeField] private GameHandler gameHandler;
-        [SerializeField] private UserPlayer localPlayer;
-        [SerializeField] private Player opponent;
+        [SerializeField] private Player2D localPlayer;
+        [SerializeField] private AbstractActor opponent;
         [SerializeField] private Transform legacyCardParent;
         [SerializeField] private SpriteRenderer heroRenderer;
         [SerializeField] private SpriteRenderer enemyRenderer;
@@ -150,7 +150,7 @@ namespace CrimsonDoom.UI
             {
                 if (localPlayer != null) localPlayer.OnPlayerUIUpdate += OnPlayerStatus;
                 if (opponent != null) opponent.OnPlayerUIUpdate += OnOpponentStatus;
-                if (gameHandler != null) gameHandler.OnGameSystemsInitialized += OnSystemsInitialized;
+                if (gameHandler != null) GameHandler.OnGameSystemsInitialized += OnSystemsInitialized;
                 if (gameHandler != null && gameHandler.inputHandler != null)
                     gameHandler.inputHandler.IsPointerInputBlocked += BlocksWorldPointerInput;
             }
@@ -193,7 +193,7 @@ namespace CrimsonDoom.UI
             if (!initialized) return;
             if (localPlayer != null) localPlayer.OnPlayerUIUpdate -= OnPlayerStatus;
             if (opponent != null) opponent.OnPlayerUIUpdate -= OnOpponentStatus;
-            if (gameHandler != null) gameHandler.OnGameSystemsInitialized -= OnSystemsInitialized;
+            if (gameHandler != null) GameHandler.OnGameSystemsInitialized -= OnSystemsInitialized;
             if (gameHandler != null && gameHandler.inputHandler != null)
                 gameHandler.inputHandler.IsPointerInputBlocked -= BlocksWorldPointerInput;
             endTurn.clicked -= EndTurn;
@@ -271,9 +271,9 @@ namespace CrimsonDoom.UI
                     enemyFill.style.width = Length.Percent(100);
                 }
             }
-            if (Application.isPlaying && gameHandler != null && selectedCard != gameHandler.SelectedCard)
+            if (Application.isPlaying && gameHandler != null && selectedCard != localPlayer.SelectedCard)
             {
-                selectedCard = gameHandler.SelectedCard;
+                selectedCard = localPlayer.SelectedCard;
                 RefreshAvailability();
             }
             if (force || modeChanged) RefreshAvailability();
@@ -344,7 +344,7 @@ namespace CrimsonDoom.UI
                     button.Q<Label>("card-title").text = data.metaData.name;
                     button.Q<Label>("card-cost").text = data.energyUsage.ToString();
                     button.Q<Image>("card-art").image = data.metaData.cardTexture;
-                    button.Q<Label>("card-description").text = Describe(data.cardAction) + Describe(data.postCardAction);
+                    button.Q<Label>("card-description").text = Describe(data.skill) + Describe(data.skill);
                     button.tooltip = data.metaData.name + " — select, then choose a highlighted target.";
                     int index = i;
                     button.clicked += () => SelectCard(index);
@@ -380,7 +380,7 @@ namespace CrimsonDoom.UI
             if (legacyCard == null) return;
             // Uses the original selection/targeting path, including its existing highlights.
             legacyCard.OnCardSelected();
-            selectedCard = gameHandler.SelectedCard;
+            selectedCard = localPlayer.SelectedCard;
             RefreshAvailability();
         }
 
@@ -430,11 +430,11 @@ namespace CrimsonDoom.UI
             var card = selectedCard;
             BeginCombatSequence(() =>
             {
-                if (gameHandler != null && gameHandler.SelectedCard == card && selectedCard == card)
+                if (gameHandler != null && localPlayer.SelectedCard == card && selectedCard == card)
                     Target(target);
             });
         }
-        private void Target(Player target)
+        private void Target(AbstractActor target)
         {
             if (showingPreview || !turnAvailable || target == null || selectedCard == null ||
                 gameHandler == null || gameHandler.inputHandler == null) return;
@@ -446,7 +446,7 @@ namespace CrimsonDoom.UI
         {
             if (CombatSequenceRunning || !HasLiveGame || !turnAvailable) return;
             localPlayer.OnTurnEnd();
-            if (gameHandler.SelectedCard != null) gameHandler.UpdateSelectedCard(gameHandler.SelectedCard);
+            if (localPlayer.SelectedCard != null) localPlayer.UpdateSelectedCard(localPlayer.SelectedCard);
             selectedCard = null;
             RefreshAvailability();
         }
@@ -686,15 +686,15 @@ namespace CrimsonDoom.UI
             if (label.text != value) label.text = value;
         }
 
-        private static string Describe(CardAction action)
+        private static string Describe(Skill action)
         {
-            if (action.value == 0) return "";
-            switch (action.actionType)
+            if (action.cardAction.value == 0) return "";
+            switch (action.cardAction.actionType)
             {
-                case CardActionType.Attack: return "Deal " + action.value + " damage.\n";
-                case CardActionType.Heal: return "Heal " + action.value + " HP.\n";
-                case CardActionType.Armor: return "Gain " + action.value + " Block.\n";
-                case CardActionType.StatusEffect: return action.statusType + " " + action.value + " for " + action.duration + " turns.\n";
+                case ActionType.Damage: return "Deal " + action.cardAction.value + " damage.\n";
+                case ActionType.Heal: return "Heal " + action.cardAction.value + " HP.\n";
+                case ActionType.Armor: return "Gain " + action.cardAction.value + " Block.\n";
+                case ActionType.StatusEffect: return action.cardAction.statusType + " " +action.cardAction.value + " for " + action.cardAction.durationType + " turns.\n";
                 default: return "";
             }
         }

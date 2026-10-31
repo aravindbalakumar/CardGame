@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: (Root)
   m_EditorClassIdentifier: 
   conditions:
-  - attributeToCompare: 3
+  - attributeToCompare: 0
     comparisonMethod: 1
     thresholdValue: 20
   shouldIncludeAllCondition: 0

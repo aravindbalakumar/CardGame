@@ -1,3 +1,5 @@
+using Game.ScriptableObjects.Card;
+
 namespace Game
 {
     using Engine;
@@ -10,20 +12,16 @@ namespace Game
 
     public class GameHandler : MonoBehaviour
     {
-        [SerializeField] Card cardPrefab;
-        [SerializeField] Transform cardParent;
-        [SerializeField] UserPlayer currentLocalPlayer;
-        [SerializeField] List<Player> opponents;
+        [SerializeField] List<AbstractActor> players;
+        [SerializeField] private AbstractActor currentTurnActor;
+        [SerializeField] public Player2D player;
         int playerLayerInt, otherLayerInt;
-        Card selectedCard;
-        // Read-only view access keeps the parallel Toolkit hand in sync with Canvas selection.
-        public Card SelectedCard => selectedCard;
-        bool isCardSelected = false;
+        public int curentTurnIndex = -1;
         [Header("Support Systems")]
         public Camera mainCamera;
         [SerializeField] InputHandler _inputHandler;
         #region Events
-        public Action OnGameSystemsInitialized;
+        public static System.Action OnGameSystemsInitialized;
         #endregion
         public InputHandler inputHandler
         {
@@ -55,41 +53,23 @@ namespace Game
             }
             _instance = this;
             StartCoroutine(InitializeSupportSystems());
-            inputHandler.OnRaycastHit.AddListener(OnRaycastHit);
-        }
-        private void OnDestroy()
-        {
-            inputHandler.OnRaycastHit.RemoveListener(OnRaycastHit);
         }
 
-        private void OnRaycastHit(GameObject hitObject)
+        public void ProcessCardAction(AbstractActor abstractActor, CardTypeScriptableObject cardData)
         {
-            var playerComp = hitObject.GetComponent<Player>();
-            if (playerComp == null && selectedCard == null)
+            switch (cardData.skill.cardAction.actionType)
             {
-                return;
-            }
-            ProcessCardAction(playerComp, selectedCard.cardData.cardAction);
-            ProcessCardAction(playerComp, selectedCard.cardData.postCardAction);
-            currentLocalPlayer.OnTurnEnd();
-        }
-
-        public void ProcessCardAction(Player playerComp, CardAction cardAction)
-        {
-
-            switch (cardAction.actionType)
-            {
-                case CardActionType.Attack:
-                    playerComp.TakeDamage(cardAction.value);
+                case ActionType.Damage:
+                    abstractActor.TakeDamage(cardData.skill.cardAction.value);
                     break;
-                case CardActionType.StatusEffect:
-                    playerComp.ApplyStatus(cardAction.statusType, cardAction.duration, cardAction.value);
+                case ActionType.StatusEffect:
+                    abstractActor.ApplyStatus(cardData.skill.cardAction.statusType, cardData.skill.cardAction.numberOfTurns, cardData.skill.cardAction.value);
                     break;
-                case CardActionType.Heal:
-                    playerComp.AddHealth(cardAction.value);
+                case ActionType.Heal:
+                    abstractActor.AddHealth(cardData.skill.cardAction.value);
                     break;
-                case CardActionType.Armor:
-                    playerComp.AddArmor(cardAction.value);
+                case ActionType.Armor:
+                    abstractActor.AddArmor(cardData.skill.cardAction.value);
                     break;
             }
         }
@@ -97,7 +77,7 @@ namespace Game
         {
             yield return new WaitUntil(() => _inputHandler.initialized);
             OnGameSystemsInitialized?.Invoke();
-            UpdateCardDeck();
+
         }
 
         public void Start()
@@ -106,61 +86,52 @@ namespace Game
             otherLayerInt = LayerMask.NameToLayer("Enemies");
         }
 
-        public void UpdateCardDeck()
-        {
-            foreach (var cardData in currentLocalPlayer.currentHand)
-            {
-                Card card = Instantiate(cardPrefab, cardParent);
-                card.InitializeCard(cardData);
-            }
-        }
+      
 
-        public void UpdateSelectedCard(Card selectedCard)
-        {
-            if (this.selectedCard != null)
-            {
-                this.selectedCard.DeselectCard();
-            }
-            EnterTargettingMode(null);
-            if (selectedCard == this.selectedCard)
-            {
-                this.selectedCard = null;
-                return;
-            }
-            else
-            {
-                this.selectedCard = selectedCard;
-                EnterTargettingMode(selectedCard.cardTargetGroup);
-                isCardSelected = true;
-                _inputHandler.shouldTrackInput = isCardSelected;
-            }
-        }
-
-        private void EnterTargettingMode(TargetGroup? incomingTargetGroup)
+        public void EnterTargettingMode(AbstractActor actor,TargetGroup? incomingTargetGroup)
         {
             if (incomingTargetGroup == null)
             {
                 _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
                 _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
                 _inputHandler.UpdateRaycastLayer();
-                currentLocalPlayer.Highlight(false);
-                opponents.ForEach(x => x.Highlight(false));
+                players.ForEach(x => x.Highlight(false));
                 return;
             }
             else
             {
                 if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.self))
                 {
-                    currentLocalPlayer.Highlight(true);
+                    actor.Highlight(true);
                     _inputHandler.layerMask.value |= (1 << playerLayerInt);
                 }
                 if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.others))
                 {
-                    opponents.ForEach(x => x.Highlight(true));
+                    players.ForEach(x =>
+                    {
+                        if (x.gameObject != actor.gameObject)
+                        {
+                            x.Highlight(true);
+                        }
+                    });
                     _inputHandler.layerMask.value |= (1 << otherLayerInt);
                 }
                 _inputHandler.UpdateRaycastLayer();
             }
+        }
+
+        public void StartGame(int startIndex=0)
+        {
+            curentTurnIndex = startIndex;
+            currentTurnActor = players[curentTurnIndex];
+            currentTurnActor.StartTurn();
+        }
+
+        public void EndTurn()
+        {
+            curentTurnIndex=curentTurnIndex+1<players.Count? curentTurnIndex+1 :0;
+            currentTurnActor = players[curentTurnIndex];
+            currentTurnActor.StartTurn();
         }
     }
 }

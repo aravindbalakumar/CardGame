@@ -1,4 +1,6 @@
 
+using System;
+
 namespace Game.ActorAndPlayers
 {
     using Game.ScriptableObjects.Card;
@@ -7,194 +9,52 @@ namespace Game.ActorAndPlayers
     using UnityEngine;
     using System.Linq;
     [System.Serializable]
-    public class Player2D : MonoBehaviour, IActor
+    public class Player2D : AbstractActor
     {
-        public System.Action<bool, int, int> OnPlayerUIUpdate;
-        public string playerID
-        {
-            get
-            {
-                return metaData.ID;
-            }
-            private set { }
-        }
-        public string Name
-        {
-            get
-            {
-                return metaData.name;
-            }
-            private set { }
-        }
-        public int MaxHealth
-        {
-            get { return stats.MaxHealth; }
-            private set { }
-        }
-        public int MaxArmor
-        {
-            get { return stats.MaxArmor; }
-            private set { }
-        }
-        public int Health
-        {
-            get
-            {
-                return stats.Health;
-            }
-            protected set
-            {
-                if (value > stats.MaxHealth)
-                {
-                    stats.Health = stats.MaxHealth;
-                }
-                else
-                {
-                    if (value <= 0)
-                    {
-                        Die();
-                    }
-                    stats.Health = value;
-                }
-                OnPlayerUIUpdate?.Invoke(alive, Health, Armor);
-            }
-        }
-        public int Armor
-        {
-            get
-            {
-                return stats.Armor;
-            }
-            protected set
-            {
-                if (value > stats.MaxArmor)
-                {
-                    stats.Armor = stats.MaxArmor;
-                }
-                else
-                {
-                    if (value <= 0)
-                    {
-                        Die();
-                    }
-                    stats.Armor = value;
-                }
-                OnPlayerUIUpdate?.Invoke(alive, Health, Armor);
-            }
-        }
-
-
+        public Collider2D collider;
         int loadOutIndex = 0, maxLimit = 0;
-        Dictionary<StatusType, Vector2Int> statusEffects;
-        List<CardTypeScriptableObject> loadout;
-        bool alive;
+        
+        Card selectedCard;
+        public Card SelectedCard => selectedCard;
+        bool isCardSelected = false;
+        [SerializeField] Card cardPrefab;
+        [SerializeField] Transform cardParent;
+        [SerializeField] List<CardTypeScriptableObject> loadout;
+        [SerializeField] public List<CardTypeScriptableObject> currentHand;
 
-        [Header("Inspector References")]
-        [SerializeReference] PlayerStatusOverheadUI playerOverUI;
-        [SerializeField] private Outline outline;
-        public Collider _collider;
-        [Header("Player Values")]
-        public List<CardTypeScriptableObject> currentHand;
-        [SerializeField] PlayerMetaData metaData;
-        [SerializeField] PlayerStats stats;
-        public bool intialized = false;
-        public virtual void Die() { alive = false; }
-
-        public void Initialize(string uniquePlayerID, Camera worldCamera, List<CardTypeScriptableObject> loadout = null)
+        public List<CardTypeScriptableObject> CurrentHand
         {
-            metaData.ID = uniquePlayerID;
-            alive = true;
-            if (loadout != null)
-            {
-                this.loadout = loadout;
-            }
-            statusEffects = new Dictionary<StatusType, Vector2Int>();
-           // playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (_collider.bounds.max.y + 1.15f)));
+            get { return currentHand; }
         }
-        public void TakeDamage(int incomingDamage)
+        public  override void Initialize()
         {
-            int armorAbsorbtion = Mathf.RoundToInt(incomingDamage * .65f);
-            int rawDamage = Mathf.RoundToInt(incomingDamage * .35f);
-            int damage = 0;
-            if (stats.Armor < armorAbsorbtion)
+            base.Initialize();
+            if (loadout == null)
             {
-                damage = (armorAbsorbtion - stats.Armor) + rawDamage;
+                Debug.LogError("Loadout is null");
+                return;
             }
-            {
-                damage = rawDamage;
-            }
-            Health = Health - damage;
-        }
-        public void ApplyStatus(StatusType statusType, int duration, int value)
-        {
-            if (statusEffects.ContainsKey(statusType))
-            {
-                statusEffects[statusType] = new Vector2Int(duration, value);
-            }
-            else
-            {
-                statusEffects.Add(statusType, new Vector2Int(duration, value));
-            }
+            InitializeCards();
+            GameHandler.instance.inputHandler.OnRaycastHit.AddListener(  OnRaycastHit);
+            // playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (collider.bounds.max.y + 1.15f)));
         }
 
-        /// <summary>
-        /// Called when the player turn ends
-        /// </summary>
-        public void OnTurnEnd()
+        public void OnDestroy()
         {
-            if (statusEffects.Count > 0)
-            {
-                List<StatusType> keysToPurge = null;
-                for (int i = 0; i < statusEffects.Count; i++)
-                {
-                    var element = statusEffects.ElementAt(i);
-                    ProcessStatusEffect(element.Key, element.Value.y);
-                    int newCount = element.Value.x - 1;
-                    if (newCount > 0)
-                    {
-                        statusEffects[element.Key] = new Vector2Int(newCount,element.Value.y);
-                    }
-                    else
-                    {
-                        if (keysToPurge == null)
-                        {
-                            keysToPurge = new List<StatusType>();
-                        }
-                        keysToPurge.Add(element.Key);
-                    }
-                }
-                if (keysToPurge != null && keysToPurge.Count > 0)
-                {
-                    keysToPurge.ForEach(x => statusEffects.Remove(x));
-                }
-            }
+            GameHandler.instance.inputHandler.OnRaycastHit.RemoveListener( OnRaycastHit);
         }
 
-        /// <summary>
-        /// Processes the status effect accordingly
-        /// </summary>
-        /// <param name="type">the statusType</param>
-        /// <param name="value">how much value status is applied</param>
-        private void ProcessStatusEffect(StatusType type, int value)
+        public void OnRaycastHit(GameObject hitObject)
         {
-            switch (type)
+            AbstractActor abstractActor = hitObject.GetComponent<AbstractActor>();
+            if (abstractActor == null)
             {
-                case StatusType.RestoreArmor:
-                    AddArmor(value);
-                    break;
-                case StatusType.RestoreHealth:
-                    AddHealth(value);
-                    break;
-                case StatusType.Bleed:
-                    AddHealth(-value);
-                    break;
-                case StatusType.ShatterArmor:
-                    AddArmor(-value);
-                    break;
+                return;
             }
+
+            GameHandler.instance.ProcessCardAction(this,selectedCard.cardData);
         }
-        public void AddHealth(int healAmount) { Health = Health + healAmount; }
-        public void AddArmor(int armorAmount) { Armor = Armor + armorAmount; }
+
         public void InitializeCards()
         {
             currentHand = new List<CardTypeScriptableObject>();
@@ -205,12 +65,34 @@ namespace Game.ActorAndPlayers
                 loadOutIndex = loadOutIndex < maxLimit - 1 ? loadOutIndex + 1 : 0;
             }
         }
-        public void Highlight(bool incomingBool)
+        public void UpdateCardDeck(Player2D player2D)
         {
-            if (outline != null)
+            foreach (var cardData in player2D.CurrentHand)
             {
-                outline.enabled = incomingBool;
+                Card card = Instantiate(cardPrefab, cardParent);
+                card.InitializeCard(cardData);
+            }
+        }
+
+        public void UpdateSelectedCard(Card selectedCard)
+        {
+            if (this.selectedCard != null)
+            {
+                this.selectedCard.DeselectCard();
+            }
+            GameHandler.instance.EnterTargettingMode(this,null);
+            if (selectedCard == this.selectedCard)
+            {
+                this.selectedCard = null;
+                return;
+            }
+            else
+            {
+                this.selectedCard = selectedCard;
+                GameHandler.instance.EnterTargettingMode(this,selectedCard.cardTargetGroup);
+                GameHandler.instance.inputHandler.shouldTrackInput = true;
             }
         }
     }
-}
+    }
+

@@ -3,8 +3,10 @@ namespace Game.DataStructures
     using System;
     using UnityEngine;
     [Serializable]
-    public enum CardActionType { Attack, Heal,Armor, StatusEffect }
+    public enum ActionType { Damage=1, Heal=2,Armor=3, StatusEffect=4, Attribute=5}
     public enum StatusType { RestoreArmor, RestoreHealth, ShatterArmor, Bleed }
+    public enum StatusDurationType { Turn, Match }
+    public enum StatusStartPoint { StartOfTurn, EndOfTurn }
 
     [Serializable, Flags]
     public enum TargetGroup { self = 1, others = 2, }
@@ -13,15 +15,19 @@ namespace Game.DataStructures
     {
         public string name;
         public Texture2D cardTexture;
+        public string animationTriggerWord;
     }
 
     [Serializable]
-    public struct CardAction
+    public struct Action
     {
-        public CardActionType actionType;
-        public StatusType statusType;
+        public ActionType actionType;
         public int value;
-        public int duration;
+        public bool isAStatusType;
+        public StatusType statusType;
+        public StatusDurationType durationType;
+        public StatusStartPoint startPoint;
+        public int numberOfTurns;
     }
     [Serializable]
     public struct PlayerMetaData

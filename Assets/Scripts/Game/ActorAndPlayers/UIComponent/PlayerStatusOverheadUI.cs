@@ -6,34 +6,34 @@ namespace Game.ActorAndPlayers
 
     public class PlayerStatusOverheadUI : MonoBehaviour
     {
-        Player player;
+        AbstractActor actor;
         [SerializeField] RectTransform rectTransform;
         [SerializeField] Canvas threeDCanvas;
         [SerializeField] Slider healthBar;
         [SerializeField] TextMeshProUGUI playerNameText;
         [SerializeField] TextMeshProUGUI healthText;
-        [SerializeField] TextMeshProUGUI armorCountText;
+        // [SerializeField] TextMeshProUGUI armorCountText;
 
-        public void LoadStausUI(Player player, Camera worldCamera,Vector3 worldPosition)
+        public void LoadStausUI(AbstractActor actor, Camera worldCamera,Vector3 worldPosition)
         {
-            this.player = player;
+            this.actor = actor;
             this.transform.position = worldPosition;
-            healthBar.maxValue = this.player.MaxHealth;
+            healthBar.maxValue = this.actor.MaxHealth;
             healthBar.minValue = 0;
             this.threeDCanvas.worldCamera = worldCamera;
             this.threeDCanvas.transform.position = worldPosition;
-            healthBar.value = this.player.Health;
-            playerNameText.text = player.name;
-            armorCountText.text = player.Armor.ToString();
+            healthBar.value = this.actor.Health;
+            playerNameText.text = actor.name;
+            // armorCountText.text = player.Armor.ToString();
             healthBar.onValueChanged.AddListener(OnSliderUpdate);
-            player.OnPlayerUIUpdate += StatusUpdate;
+            actor.OnPlayerUIUpdate += StatusUpdate;
         }
 
         private void StatusUpdate(bool alive, int health, int armor)
         {
             healthBar.value = health;
-            playerNameText.text = alive ? player.name : $"<s>{player.name}</s>";
-            armorCountText.text = armor.ToString();
+            playerNameText.text = alive ? actor.name : $"<s>{actor.name}</s>";
+            // armorCountText.text = armor.ToString();
         }
 
         private void OnSliderUpdate(float incomingValue) { healthText.text = $"{(int)incomingValue}/{(int)healthBar.maxValue}"; }
@@ -42,7 +42,7 @@ namespace Game.ActorAndPlayers
         {
             healthBar.onValueChanged.RemoveListener(OnSliderUpdate);
             healthBar.onValueChanged.RemoveAllListeners();
-            player.OnPlayerUIUpdate -= StatusUpdate;
+            actor.OnPlayerUIUpdate -= StatusUpdate;
         }
 
         private void OnDestroy()

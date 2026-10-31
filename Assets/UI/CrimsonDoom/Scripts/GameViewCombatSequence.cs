@@ -351,8 +351,8 @@ namespace CrimsonDoom.UI
             CombatSequenceRunning = false;
             CombatPhase = "Idle";
             previewSelectedIndex = -1;
-            if (gameHandler != null && gameHandler.SelectedCard != null)
-                gameHandler.UpdateSelectedCard(gameHandler.SelectedCard);
+            if (gameHandler != null && gameHandler.player.SelectedCard != null)
+                gameHandler.player.UpdateSelectedCard(gameHandler.player.SelectedCard);
             selectedCard = null;
             if (initialized && isActiveAndEnabled) RefreshFromGame(true);
         }

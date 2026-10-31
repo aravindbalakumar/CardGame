@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9822e4fde8791c34c878ceea8e91f674, type: 3}
+  m_Name: BlessedWard
+  m_EditorClassIdentifier: 
+  metaData:
+    name: Blessed Ward
+    cardTexture: {fileID: 2800000, guid: c6d2b53fd0217814ab9e6a1434666481, type: 3}
+    animationTriggerWord: spell
+  energyUsage: 1
+  skill:
+    targetGroup: 0
+    cardAction:
+      actionType: 3
+      value: 5
+      isAStatusType: 0
+      statusType: 0
+      durationType: 0
+      startPoint: 0
+      numberOfTurns: 0
+    doesHavePostCardAction: 0
+    postCardAction:
+      actionType: 0
+      value: 0
+      isAStatusType: 0
+      statusType: 0
+      durationType: 0
+      startPoint: 0
+      numberOfTurns: 0
+    doesHaveNegativeEffect: 0
+    negativeEffect:
+      actionType: 0
+      value: 0
+      isAStatusType: 0
+      statusType: 0
+      durationType: 0
+      startPoint: 0
+      numberOfTurns: 0
