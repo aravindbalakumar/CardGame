@@ -72,7 +72,7 @@ namespace Game.ActorAndPlayers
         }
         public void OnPointerDown(PointerEventData eventData)
         {
-            Debug.Log("ENTERIN GHERE");
+            Debug.Log("ENTERIN HERE");
             if (GameHandler.instance.player.SelectedCard != null)
             {
                 if(GameHandler.instance.player.SelectedCard.cardTargetGroup.Contains(this.gameObject.layer))

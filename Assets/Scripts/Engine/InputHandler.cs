@@ -43,7 +43,7 @@ namespace Engine
 #if UNITY_EDITOR
             if (Input.GetMouseButtonUp(0))
             {
-                raycaster.Raycast(Input.mousePosition);
+                // raycaster.Raycast(Input.mousePosition);
             }
 #else
             if (!shouldTrackInput)
@@ -73,7 +73,7 @@ namespace Engine
                 case TouchPhase.Stationary:
                     break;
                 case TouchPhase.Ended:
-                    raycaster.Raycast(touch.position);
+                    // raycaster.Raycast(touch.position);
                     break;
                 case TouchPhase.Canceled: break;
             }
