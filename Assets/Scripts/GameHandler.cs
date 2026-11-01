@@ -1,5 +1,6 @@
 using Game.ScriptableObjects.Card;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 namespace Game
 {
@@ -19,12 +20,14 @@ namespace Game
         public int curentTurnIndex = -1;
         [Header("Support Systems")]
         public Camera mainCamera;
+        public Physics2DRaycaster raycaster;
         // [SerializeField] InputHandler _inputHandler;
         #region Events
         public static System.Action OnGameSystemsInitialized;
         public static System.Action OnGameSystemsClosed;
         public static System.Action<LayerMask?> OnTargettingModeChanged;
         public static System.Action<AbstractActor> OnAbstractActorClicked;
+        public static System.Action<AbstractActor,CardTypeScriptableObject> OnAbstractActorClickedWithCard;
         #endregion
         // public InputHandler inputHandler
         // {
@@ -55,6 +58,7 @@ namespace Game
                 return;
             }
             _instance = this;
+            OnAbstractActorClickedWithCard += ProcessCardAction;
             // StartCoroutine(InitializeSupportSystems());
         }
 
@@ -81,17 +85,23 @@ namespace Game
             yield return new WaitForSeconds(0.5f);
             // yield return new WaitUntil(() => _inputHandler.initialized);
             OnGameSystemsInitialized?.Invoke();
+            StartGame();
 
         }
 
         private void OnDestroy()
         {
+            OnAbstractActorClickedWithCard -= ProcessCardAction;
             OnGameSystemsClosed?.Invoke();
         }
 
 
         public void EnterTargettingMode(LayerMask? incomingLayerMask)
         {
+            if (incomingLayerMask.HasValue)
+            {
+                raycaster.eventMask = incomingLayerMask.Value;
+            }
             OnTargettingModeChanged?.Invoke(incomingLayerMask);
             // if (incomingLayerMask == null)
             // {

@@ -72,13 +72,16 @@ namespace Game.ActorAndPlayers
         }
         public void OnPointerDown(PointerEventData eventData)
         {
-            Debug.Log("ENTERIN HERE");
             if (GameHandler.instance.player.SelectedCard != null)
             {
                 if(GameHandler.instance.player.SelectedCard.cardTargetGroup.Contains(this.gameObject.layer))
                 {
-                GameHandler.OnAbstractActorClicked.Invoke(this);
+                GameHandler.OnAbstractActorClickedWithCard.Invoke(this,GameHandler.instance.player.SelectedCard.cardData);
                 }
+            }
+            else
+            {
+                GameHandler.OnAbstractActorClicked.Invoke(this);
             }
         }
 

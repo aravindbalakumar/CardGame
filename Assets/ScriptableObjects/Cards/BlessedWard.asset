@@ -18,7 +18,9 @@ MonoBehaviour:
     animationTriggerWord: spell
   energyUsage: 1
   skill:
-    targetGroup: 0
+    targetGroup:
+      serializedVersion: 2
+      m_Bits: 64
     cardAction:
       actionType: 3
       value: 5

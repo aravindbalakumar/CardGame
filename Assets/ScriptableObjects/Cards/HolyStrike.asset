@@ -18,7 +18,9 @@ MonoBehaviour:
     animationTriggerWord: attack
   energyUsage: 3
   skill:
-    targetGroup: 2
+    targetGroup:
+      serializedVersion: 2
+      m_Bits: 128
     cardAction:
       actionType: 1
       value: 10

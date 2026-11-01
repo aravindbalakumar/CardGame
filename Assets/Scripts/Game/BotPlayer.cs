@@ -39,8 +39,12 @@ namespace Game
             {
                 if(GameHandler.instance.player.SelectedCard.cardTargetGroup.Contains(this.gameObject.layer))
                 {
-                    GameHandler.OnAbstractActorClicked.Invoke(this);
+                    GameHandler.OnAbstractActorClickedWithCard.Invoke(this,GameHandler.instance.player.SelectedCard.cardData);
                 }
+            }
+            else
+            {
+                GameHandler.OnAbstractActorClicked.Invoke(this);
             }
         }
         public void UseSkill(Skill skill,AbstractActor target)
@@ -58,8 +62,28 @@ namespace Game
             
         }
         
+        public override void UpdateVisualSystem(LayerMask? mask)
+        {
+            base.UpdateVisualSystem(mask);
+            if (mask.HasValue)
+            {
+                if (mask.Value.Contains(this.gameObject))
+                {
+                    outline.enabled = true;
+                }
+                else
+                {
+                    outline.enabled = false;
+                }
+            }
+            else
+            {
+                outline.enabled = false;
+            }
+        }
     
     }
+    
 
 
 }
