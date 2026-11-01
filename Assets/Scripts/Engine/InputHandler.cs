@@ -6,7 +6,7 @@ namespace Engine
 
     public class InputHandler : MonoBehaviour
     {
-        private RaycastHandler raycaster;
+        private RaycastHandler2D raycaster;
         [SerializeField] private Camera raycastCamera;
         Touch touch;
         TouchPhase touchPhase;
@@ -15,18 +15,18 @@ namespace Engine
         public UnityEvent<GameObject> OnRaycastHit;
         public LayerMask layerMask;
         // Optional overlay gate. The original raycast path is unchanged without a UI adapter.
-        public Func<bool> IsPointerInputBlocked;
+        // public Func<bool> IsPointerInputBlocked;
 
         private void Awake()
         {
-            raycaster = new RaycastHandler(raycastCamera, layerMask, Mathf.Infinity);
-            raycaster.OnRaycastHit += RaycastHit;
+            raycaster = new RaycastHandler2D(raycastCamera, layerMask, Mathf.Infinity);
+            // raycaster.OnRaycastHit += RaycastHit;
             initialized = true;
         }
-        private void OnApplicationQuit() { raycaster.OnRaycastHit -= RaycastHit; }
+        // private void OnApplicationQuit() { raycaster.OnRaycastHit -= RaycastHit; }
 
         public void UpdateRaycastLayer() => raycaster.UpdateLayerMask(layerMask);
-        private void RaycastHit(object sender, RaycastEvent raycastEvent)
+        private void RaycastHit(object sender, RaycastEvent<RaycastHit2D> raycastEvent)
         {
             if (raycastEvent.raycastHit.transform != null)
             {
@@ -36,10 +36,10 @@ namespace Engine
 
         public void Update()
         {
-            if (IsPointerInputBlocked?.Invoke() == true)
-            {
-                return;
-            }
+            // if (IsPointerInputBlocked?.Invoke() == true)
+            // {
+            //     return;
+            // }
 #if UNITY_EDITOR
             if (Input.GetMouseButtonUp(0))
             {

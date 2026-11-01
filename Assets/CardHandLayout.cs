@@ -11,13 +11,13 @@ public class CardHandLayout : MonoBehaviour
     [Header("Position")]
     [SerializeField] private float handYOffset = 0f;
 
-    private List<RectTransform> cards = new List<RectTransform>();
+    private List<RectTransform> cardTransforms = new List<RectTransform>();
 
     public void AddCard(RectTransform card)
     {
-        if (!cards.Contains(card))
+        if (!cardTransforms.Contains(card))
         {
-            cards.Add(card);
+            cardTransforms.Add(card);
             card.SetParent(transform, false);
         }
 
@@ -26,9 +26,9 @@ public class CardHandLayout : MonoBehaviour
 
     public void RemoveCard(RectTransform card)
     {
-        if (cards.Contains(card))
+        if (cardTransforms.Contains(card))
         {
-            cards.Remove(card);
+            cardTransforms.Remove(card);
         }
 
         ArrangeCards();
@@ -36,7 +36,7 @@ public class CardHandLayout : MonoBehaviour
 
     public void ArrangeCards()
     {
-        int count = cards.Count;
+        int count = cardTransforms.Count;
 
         if (count == 0)
             return;
@@ -45,7 +45,7 @@ public class CardHandLayout : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            RectTransform card = cards[i];
+            RectTransform card = cardTransforms[i];
 
             // Distance from center
             float offset = i - center;

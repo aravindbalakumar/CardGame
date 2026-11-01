@@ -151,8 +151,8 @@ namespace CrimsonDoom.UI
                 if (localPlayer != null) localPlayer.OnPlayerUIUpdate += OnPlayerStatus;
                 if (opponent != null) opponent.OnPlayerUIUpdate += OnOpponentStatus;
                 if (gameHandler != null) GameHandler.OnGameSystemsInitialized += OnSystemsInitialized;
-                if (gameHandler != null && gameHandler.inputHandler != null)
-                    gameHandler.inputHandler.IsPointerInputBlocked += BlocksWorldPointerInput;
+                // if (gameHandler != null && gameHandler.inputHandler != null)
+                //     gameHandler.inputHandler.IsPointerInputBlocked += BlocksWorldPointerInput;
             }
             showingPreview = !HasLiveGame;
             initialized = true;
@@ -194,8 +194,8 @@ namespace CrimsonDoom.UI
             if (localPlayer != null) localPlayer.OnPlayerUIUpdate -= OnPlayerStatus;
             if (opponent != null) opponent.OnPlayerUIUpdate -= OnOpponentStatus;
             if (gameHandler != null) GameHandler.OnGameSystemsInitialized -= OnSystemsInitialized;
-            if (gameHandler != null && gameHandler.inputHandler != null)
-                gameHandler.inputHandler.IsPointerInputBlocked -= BlocksWorldPointerInput;
+            // if (gameHandler != null && gameHandler.inputHandler != null)
+            //     gameHandler.inputHandler.IsPointerInputBlocked -= BlocksWorldPointerInput;
             endTurn.clicked -= EndTurn;
             selfTarget.clicked -= TargetSelf;
             enemyTarget.clicked -= TargetOpponent;
@@ -216,8 +216,8 @@ namespace CrimsonDoom.UI
         {
             if (initialized)
             {
-                UpdateCombatRecovery();
-                RefreshActorPlacement();
+                // UpdateCombatRecovery();
+                // RefreshActorPlacement();
             }
         }
 
@@ -391,8 +391,8 @@ namespace CrimsonDoom.UI
             playerStatus.EnableInClassList("active-player", showingPreview || ready);
             playerStatus.EnableInClassList("inactive-player", !showingPreview && !ready);
             bool selected = ready && selectedCard != null && selectedCard.cardData != null;
-            selfTarget.SetEnabled(selected && selectedCard.cardTargetGroup.HasFlag(TargetGroup.self));
-            enemyTarget.SetEnabled(selected && opponent != null && opponent.isActiveAndEnabled && selectedCard.cardTargetGroup.HasFlag(TargetGroup.others));
+            // selfTarget.SetEnabled(selected && selectedCard.cardTargetGroup.HasFlag(TargetGroup.self));
+            // enemyTarget.SetEnabled(selected && opponent != null && opponent.isActiveAndEnabled && selectedCard.cardTargetGroup.HasFlag(TargetGroup.others));
             if (showingPreview)
                 enemyTarget.SetEnabled(Application.isPlaying && !CombatSequenceRunning && previewSelectedIndex >= 0);
             for (int i = 0; i < cardButtons.Count; i++)
@@ -424,8 +424,8 @@ namespace CrimsonDoom.UI
                 if (previewSelectedIndex >= 0) BeginCombatSequence(null);
                 return;
             }
-            if (selectedCard == null || !turnAvailable || opponent == null || !opponent.isActiveAndEnabled ||
-                !selectedCard.cardTargetGroup.HasFlag(TargetGroup.others)) return;
+            // if (selectedCard == null || !turnAvailable || opponent == null || !opponent.isActiveAndEnabled ||
+            //     !selectedCard.cardTargetGroup.HasFlag(TargetGroup.others)) return;
             var target = opponent;
             var card = selectedCard;
             BeginCombatSequence(() =>
@@ -436,10 +436,10 @@ namespace CrimsonDoom.UI
         }
         private void Target(AbstractActor target)
         {
-            if (showingPreview || !turnAvailable || target == null || selectedCard == null ||
-                gameHandler == null || gameHandler.inputHandler == null) return;
-            // The existing handler owns card effects and turn completion.
-            gameHandler.inputHandler.OnRaycastHit.Invoke(target.gameObject);
+            // if (showingPreview || !turnAvailable || target == null || selectedCard == null ||
+            //     gameHandler == null || gameHandler.inputHandler == null) return;
+            // // The existing handler owns card effects and turn completion.
+            // gameHandler.inputHandler.OnRaycastHit.Invoke(target.gameObject);
         }
 
         private void EndTurn()

@@ -11,7 +11,7 @@ namespace Game
     public class Card : MonoBehaviour
     {
         CardTypeScriptableObject cardBehaviourAndData;
-        public TargetGroup cardTargetGroup
+        public LayerMask cardTargetGroup
         {
             get
             {
@@ -30,14 +30,23 @@ namespace Game
             }
         }
         [SerializeField] Image cardIcon;
-        [SerializeField] TextMeshProUGUI cardName;
-        [SerializeField] TextMeshProUGUI cardEnergy;
+        // [SerializeField] TextMeshProUGUI cardName;
+        // [SerializeField] TextMeshProUGUI cardEnergy;
+        [SerializeField] RectTransform _rectTransform;
+
+        public RectTransform RectTransform
+        {
+            get
+            {
+                return _rectTransform;
+            }
+        }
         public void InitializeCard(CardTypeScriptableObject cardBehaviourAndData)
         {
             this.cardBehaviourAndData = cardBehaviourAndData;
             cardIcon.overrideSprite = Sprite.Create(this.cardBehaviourAndData.metaData.cardTexture, new Rect(0, 0, this.cardBehaviourAndData.metaData.cardTexture.width, this.cardBehaviourAndData.metaData.cardTexture.height), Vector2.one / 2);
-            cardName.text = this.cardBehaviourAndData.metaData.name;
-            cardEnergy.text = this.cardBehaviourAndData.energyUsage.ToString();
+            // cardName.text = this.cardBehaviourAndData.metaData.name;
+            // cardEnergy.text = this.cardBehaviourAndData.energyUsage.ToString();
         }
         public void OnCardSelected()
         {

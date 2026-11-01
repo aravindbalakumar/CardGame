@@ -7,7 +7,7 @@ namespace Game.ScriptableObjects.Card
     [System.Serializable]
     public class Skill
     {
-        public TargetGroup targetGroup;
+        public LayerMask targetGroup;
         public Action cardAction;
         public bool doesHavePostCardAction=false;
         public Action postCardAction;

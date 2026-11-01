@@ -63,6 +63,7 @@ namespace Game.ActorAndPlayers
                 OnPlayerUIUpdate?.Invoke(alive, Health, Armor);
             }
         }
+        
         public int Armor
         {
             get
@@ -93,23 +94,46 @@ namespace Game.ActorAndPlayers
 
         [Header("Inspector References")]
         [SerializeReference] protected PlayerStatusOverheadUI playerOverUI;
-        [SerializeField] private Outline outline;
+        [SerializeField] protected Outline outline;
         [Header("Player Values")]
         [SerializeField] PlayerMetaData metaData;
         [SerializeField] PlayerStats stats;
         public bool intialized = false;
         public virtual void Die() { alive = false; }
 
-        private void Start()
+        private void Awake()
         {
-            GameHandler.OnGameSystemsInitialized += Initialize;
+            GameHandler.OnGameSystemsInitialized += OnMainSystemsInitialized;
+            GameHandler.OnGameSystemsClosed += OnMainSystemsClosed;
         }
 
+        private void OnMainSystemsInitialized()
+        {
+            Initialize();
+            GameHandler.OnTargettingModeChanged+=UpdateVisualSystem;
+            GameHandler.OnAbstractActorClicked+=OnActorClicked;
+        }
+
+        private void OnMainSystemsClosed()
+        {
+            GameHandler.OnTargettingModeChanged-=UpdateVisualSystem;
+            GameHandler.OnAbstractActorClicked-=OnActorClicked;
+        }
         private void OnDestroy()
         {
-            GameHandler.OnGameSystemsInitialized -= Initialize;
+            GameHandler.OnGameSystemsInitialized -= OnMainSystemsInitialized;
+            GameHandler.OnGameSystemsClosed -= OnMainSystemsClosed;
+           
         }
 
+        public virtual void UpdateVisualSystem(LayerMask? mask)
+        {
+            
+        }  
+        public virtual void OnActorClicked(AbstractActor actor)
+        {
+            
+        }
         public virtual void StartTurn(){}
 
         public virtual void EndTurn()

@@ -1,106 +1,114 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <Style src="GameView.uss" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/CrimsonDoom/GameView.uss?fileID=7433441132597879392&amp;guid=5a957a57bf0bf75468510ee38d52504a&amp;type=3#GameView"/>
     <ui:VisualElement name="game-root" class="game-root">
-        <ui:VisualElement class="top-bar">
-            <ui:Image class="portrait" tooltip="Voss" />
-            <ui:Image class="heart icon" />
-            <ui:Label name="header-health" text="50/50" class="health-text" />
-            <ui:Image class="currency icon" />
-            <ui:Label name="currency-count" text="15" class="stat-text" tooltip="Reference preview: currency has no gameplay source yet." />
-            <ui:VisualElement class="spacer" />
-            <ui:Label name="preview-label" text="DESIGN PREVIEW" class="eyebrow preview-label" tooltip="Gameplay actors are inactive in this scene. Reference values are shown until a live hand is available." />
-            <ui:Button name="journal-button" class="nav-button journal" tooltip="Journal is not implemented yet." enabled="false" />
-            <ui:Button name="deck-button" class="nav-button book" tooltip="View hand" />
-            <ui:Button name="settings-button" class="nav-button gear" tooltip="UI display options" />
+        <ui:VisualElement class="top-bar" style="background-repeat: no-repeat space;">
+            <ui:Image tooltip="Voss" class="portrait"/>
+            <ui:Image class="heart icon"/>
+            <ui:Label name="header-health" text="50/50" class="health-text"/>
+            <ui:Image class="currency icon"/>
+            <ui:Label name="currency-count" text="15" tooltip="Reference preview: currency has no gameplay source yet." class="stat-text"/>
+            <ui:VisualElement class="spacer"/>
+            <ui:Label name="preview-label" text="DESIGN PREVIEW" tooltip="Gameplay actors are inactive in this scene. Reference values are shown until a live hand is available." class="eyebrow preview-label"/>
+            <ui:Button name="journal-button" tooltip="Journal is not implemented yet." enabled="false" class="nav-button journal"/>
+            <ui:Button name="deck-button" tooltip="View hand" class="nav-button book"/>
+            <ui:Button name="settings-button" tooltip="UI display options" class="nav-button gear"/>
         </ui:VisualElement>
         <ui:VisualElement class="arena">
             <ui:VisualElement class="inventory">
-                <ui:Image class="inventory-icon telescope" tooltip="Relic preview" />
-                <ui:Image class="inventory-icon compass" tooltip="Relic preview" />
-                <ui:Image class="inventory-icon quill" tooltip="Relic preview" />
-                <ui:Label text="0" class="small-count" />
-                <ui:Image class="inventory-icon potion" tooltip="Potion preview" />
-                <ui:Image class="inventory-icon vial" tooltip="Potion preview" />
-                <ui:Image class="inventory-icon pouch" tooltip="Relic preview" />
-                <ui:Image class="inventory-icon blue-vial" tooltip="Potion preview" />
+                <ui:Image tooltip="Relic preview" class="inventory-icon telescope"/>
+                <ui:Image tooltip="Relic preview" class="inventory-icon compass"/>
+                <ui:Image tooltip="Relic preview" class="inventory-icon quill"/>
+                <ui:Label text="0" class="small-count"/>
+                <ui:Image tooltip="Potion preview" class="inventory-icon potion"/>
+                <ui:Image tooltip="Potion preview" class="inventory-icon vial"/>
+                <ui:Image tooltip="Relic preview" class="inventory-icon pouch"/>
+                <ui:Image tooltip="Potion preview" class="inventory-icon blue-vial"/>
             </ui:VisualElement>
             <ui:VisualElement class="battlefield">
                 <ui:VisualElement class="hero-space">
-                    <ui:Button name="self-target" class="actor-target self-target" tooltip="Target yourself with the selected card" />
+                    <ui:Button name="self-target" tooltip="Target yourself with the selected card" class="actor-target self-target"/>
                 </ui:VisualElement>
                 <ui:VisualElement class="enemy-space">
                     <ui:VisualElement class="enemy-status">
-                        <ui:Image class="enemy-crest" />
-                        <ui:Label name="enemy-name" text="Rider &amp; Warg" class="enemy-name" />
+                        <ui:Image class="enemy-crest"/>
+                        <ui:Label name="enemy-name" text="Rider &amp; Warg" class="enemy-name"/>
                         <ui:VisualElement class="health-track">
-                            <ui:VisualElement name="enemy-health-fill" class="health-fill" />
-                            <ui:Label name="enemy-health" text="25/25" class="health-value" />
+                            <ui:VisualElement name="enemy-health-fill" class="health-fill"/>
+                            <ui:Label name="enemy-health" text="25/25" class="health-value"/>
                         </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:Button name="enemy-target" class="actor-target enemy-target" tooltip="Target the opponent with the selected card" />
+                    <ui:Button name="enemy-target" tooltip="Target the opponent with the selected card" class="actor-target enemy-target"/>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement class="intent-column">
-                <ui:Image class="map" tooltip="Map preview" />
-                <ui:VisualElement class="spacer" />
-                <ui:VisualElement name="intent-preview" class="intent-preview" tooltip="Reference intent preview; the existing game has no intent API.">
+                <ui:Image tooltip="Map preview" class="map"/>
+                <ui:VisualElement class="spacer"/>
+                <ui:VisualElement name="intent-preview" tooltip="Reference intent preview; the existing game has no intent API." class="intent-preview">
                     <ui:VisualElement class="intent-heading">
-                        <ui:Image class="attack-icon" />
-                        <ui:Label text="T1" class="turn-badge" />
+                        <ui:Image class="attack-icon"/>
+                        <ui:Label text="T1" class="turn-badge"/>
                     </ui:VisualElement>
-                    <ui:Label text="Turn 2: Lifesteal 10&#10;(deals 10, heals 10)" class="parchment intent-note" />
-                    <ui:Label text="Turn 3: Buff&#10;(gain 3 Strength)" class="parchment intent-note" />
-                    <ui:Label text="SPECIAL: Kill first&#10;or he heals faster&#10;than you damage him." class="parchment intent-note special-note" />
+                    <ui:Label text="Turn 2: Lifesteal 10&#10;(deals 10, heals 10)" class="parchment intent-note"/>
+                    <ui:Label text="Turn 3: Buff&#10;(gain 3 Strength)" class="parchment intent-note"/>
+                    <ui:Label text="SPECIAL: Kill first&#10;or he heals faster&#10;than you damage him." class="parchment intent-note special-note"/>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement class="bottom-area">
+        <ui:VisualElement class="bottom-area" style="background-position-x: center; -unity-background-scale-mode: stretch-to-fill; background-color: rgba(0, 0, 0, 0);">
             <ui:VisualElement name="player-status" class="player-status active-player">
                 <ui:VisualElement class="health-track player-health-track">
-                    <ui:VisualElement name="player-health-fill" class="health-fill" />
-                    <ui:Label name="player-health" text="50/50" class="health-value" />
+                    <ui:VisualElement name="player-health-fill" class="health-fill"/>
+                    <ui:Label name="player-health" text="50/50" class="health-value"/>
                 </ui:VisualElement>
-                <ui:VisualElement class="block-row">
-                    <ui:Image class="block-icon" />
-                    <ui:Label name="player-block" text="10 Block" class="block-text" />
+                <ui:VisualElement name="VisualElement" class="block-row">
+                    <ui:Image class="block-icon"/>
+                    <ui:Label name="player-block" text="10 Block" class="block-text"/>
                 </ui:VisualElement>
-                <ui:VisualElement class="energy-orb" tooltip="Reference preview. The current game defines card costs but has no energy pool.">
-                    <ui:VisualElement class="orb-rim" picking-mode="Ignore" />
-                    <ui:VisualElement class="orb-inner" picking-mode="Ignore" />
-                    <ui:VisualElement class="orb-glint" picking-mode="Ignore" />
-                    <ui:Label name="energy-value" text="3/3" class="energy-value" />
+                <ui:VisualElement tooltip="Reference preview. The current game defines card costs but has no energy pool." enabled="true" class="energy-orb">
+                    <ui:VisualElement picking-mode="Ignore" enabled="true" class="orb-rim"/>
+                    <ui:VisualElement picking-mode="Ignore" enabled="true" class="orb-inner"/>
+                    <ui:VisualElement picking-mode="Ignore" enabled="true" class="orb-glint"/>
+                    <ui:Label name="energy-value" text="3/3" class="energy-value"/>
                 </ui:VisualElement>
-                <ui:Label text="Energy" class="energy-caption" />
+                <ui:Label text="Energy" class="energy-caption"/>
             </ui:VisualElement>
             <ui:VisualElement class="hand-region">
-                <ui:Label name="selection-hint" text="" class="selection-hint" />
+                <ui:Label name="selection-hint" text="" class="selection-hint"/>
                 <ui:ScrollView name="hand-scroll" mode="Horizontal" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Hidden" class="hand-scroll">
-                    <ui:VisualElement name="hand" class="hand" />
+                    <ui:VisualElement name="hand" class="hand"/>
                 </ui:ScrollView>
             </ui:VisualElement>
             <ui:VisualElement class="controls">
-                <ui:Button name="end-turn" text="End Turn" class="end-turn" tooltip="Requires an active, initialized gameplay hand." />
+                <ui:Button name="end-turn" text="End Turn" tooltip="Requires an active, initialized gameplay hand." class="end-turn" style="opacity: 1;"/>
                 <ui:VisualElement class="pile-row">
-                    <ui:Button name="draw-pile" class="pile" tooltip="View current hand">
-                        <ui:VisualElement class="deck-stack" picking-mode="Ignore"><ui:VisualElement class="deck-stack-inner" picking-mode="Ignore" /><ui:VisualElement class="deck-stack-front" picking-mode="Ignore" /></ui:VisualElement>
-                        <ui:Label name="hand-count" text="12" class="pile-count" />
+                    <ui:Button name="draw-pile" tooltip="View current hand" class="pile">
+                        <ui:VisualElement picking-mode="Ignore" class="deck-stack">
+                            <ui:VisualElement picking-mode="Ignore" class="deck-stack-inner"/>
+                            <ui:VisualElement picking-mode="Ignore" class="deck-stack-front"/>
+                        </ui:VisualElement>
+                        <ui:Label name="hand-count" text="12" class="pile-count"/>
                     </ui:Button>
-                    <ui:VisualElement class="pile unavailable" tooltip="No discard pile exists in the current gameplay API.">
-                        <ui:VisualElement class="discard-bin" picking-mode="Ignore"><ui:VisualElement class="bin-rim" /><ui:VisualElement class="bin-line bin-line-left" /><ui:VisualElement class="bin-line" /><ui:VisualElement class="bin-line bin-line-right" /></ui:VisualElement>
-                        <ui:Label name="discard-count" text="0" class="pile-count" />
+                    <ui:VisualElement tooltip="No discard pile exists in the current gameplay API." class="pile unavailable">
+                        <ui:VisualElement picking-mode="Ignore" class="discard-bin">
+                            <ui:VisualElement class="bin-rim"/>
+                            <ui:VisualElement class="bin-line bin-line-left"/>
+                            <ui:VisualElement class="bin-line"/>
+                            <ui:VisualElement class="bin-line bin-line-right"/>
+                        </ui:VisualElement>
+                        <ui:Label name="discard-count" text="0" class="pile-count"/>
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="options-panel" class="options-panel hidden">
-            <ui:Label text="Crimson Doom" class="panel-title" />
-            <ui:Label text="CHARACTER ANIMATIONS" class="eyebrow" />
-            <ui:Label name="animation-status" text="Choose an animation to preview" class="animation-status" />
-            <ui:ScrollView name="animation-buttons" mode="Vertical" vertical-scroller-visibility="Auto" class="animation-buttons" />
-            <ui:Button name="stop-animation-preview" text="Restart Idle" class="panel-button" />
-            <ui:Label text="Scene rendering" class="eyebrow options-section" />
-            <ui:Label text="Edit character Transforms, SpriteRenderers and Animators in the Inspector. Animation previews restore the original pose visibility when finished." class="options-help" />
-            <ui:Button name="close-options" text="Close" class="panel-button" />
+            <ui:Label text="Crimson Doom" class="panel-title"/>
+            <ui:Label text="CHARACTER ANIMATIONS" class="eyebrow"/>
+            <ui:Label name="animation-status" text="Choose an animation to preview" class="animation-status"/>
+            <ui:ScrollView name="animation-buttons" mode="Vertical" vertical-scroller-visibility="Auto" class="animation-buttons"/>
+            <ui:Button name="stop-animation-preview" text="Restart Idle" class="panel-button"/>
+            <ui:Label text="Scene rendering" class="eyebrow options-section"/>
+            <ui:Label text="Edit character Transforms, SpriteRenderers and Animators in the Inspector. Animation previews restore the original pose visibility when finished." class="options-help"/>
+            <ui:Button name="close-options" text="Close" class="panel-button"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

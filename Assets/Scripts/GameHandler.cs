@@ -1,4 +1,5 @@
 using Game.ScriptableObjects.Card;
+using UnityEngine.Events;
 
 namespace Game
 {
@@ -15,22 +16,24 @@ namespace Game
         [SerializeField] List<AbstractActor> players;
         [SerializeField] private AbstractActor currentTurnActor;
         [SerializeField] public Player2D player;
-        int playerLayerInt, otherLayerInt;
         public int curentTurnIndex = -1;
         [Header("Support Systems")]
         public Camera mainCamera;
-        [SerializeField] InputHandler _inputHandler;
+        // [SerializeField] InputHandler _inputHandler;
         #region Events
         public static System.Action OnGameSystemsInitialized;
+        public static System.Action OnGameSystemsClosed;
+        public static System.Action<LayerMask?> OnTargettingModeChanged;
+        public static System.Action<AbstractActor> OnAbstractActorClicked;
         #endregion
-        public InputHandler inputHandler
-        {
-            get
-            {
-                return _inputHandler;
-            }
-            private set { }
-        }
+        // public InputHandler inputHandler
+        // {
+        //     get
+        //     {
+        //         return _inputHandler;
+        //     }
+        //     private set { }
+        // }
 
         public static GameHandler instance
         {
@@ -52,7 +55,7 @@ namespace Game
                 return;
             }
             _instance = this;
-            StartCoroutine(InitializeSupportSystems());
+            // StartCoroutine(InitializeSupportSystems());
         }
 
         public void ProcessCardAction(AbstractActor abstractActor, CardTypeScriptableObject cardData)
@@ -73,51 +76,52 @@ namespace Game
                     break;
             }
         }
-        private IEnumerator InitializeSupportSystems()
+        private IEnumerator Start()
         {
-            yield return new WaitUntil(() => _inputHandler.initialized);
+            yield return new WaitForSeconds(0.5f);
+            // yield return new WaitUntil(() => _inputHandler.initialized);
             OnGameSystemsInitialized?.Invoke();
 
         }
 
-        public void Start()
+        private void OnDestroy()
         {
-            playerLayerInt = LayerMask.NameToLayer("Player");
-            otherLayerInt = LayerMask.NameToLayer("Enemies");
+            OnGameSystemsClosed?.Invoke();
         }
 
-      
 
-        public void EnterTargettingMode(AbstractActor actor,TargetGroup? incomingTargetGroup)
+        public void EnterTargettingMode(LayerMask? incomingLayerMask)
         {
-            if (incomingTargetGroup == null)
-            {
-                _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
-                _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
-                _inputHandler.UpdateRaycastLayer();
-                players.ForEach(x => x.Highlight(false));
-                return;
-            }
-            else
-            {
-                if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.self))
-                {
-                    actor.Highlight(true);
-                    _inputHandler.layerMask.value |= (1 << playerLayerInt);
-                }
-                if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.others))
-                {
-                    players.ForEach(x =>
-                    {
-                        if (x.gameObject != actor.gameObject)
-                        {
-                            x.Highlight(true);
-                        }
-                    });
-                    _inputHandler.layerMask.value |= (1 << otherLayerInt);
-                }
-                _inputHandler.UpdateRaycastLayer();
-            }
+            OnTargettingModeChanged?.Invoke(incomingLayerMask);
+            // if (incomingLayerMask == null)
+            // {
+            //     // _inputHandler.layerMask.value &= ~(1 << playerLayerInt);
+            //     // _inputHandler.layerMask.value &= ~(1 << otherLayerInt);
+            //     // _inputHandler.UpdateRaycastLayer();
+            //     players.ForEach(x => x.Highlight(false));
+            //     return;
+            // }
+            // else
+            // {
+            //     OnTargettingModeChanged?.Invoke(incomingLayerMask);
+            //     if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.self))
+            //     {
+            //         actor.Highlight(true);
+            //         // _inputHandler.layerMask.value |= (1 << playerLayerInt);
+            //     }
+            //     if (incomingTargetGroup.Value.HasFlag(DataStructures.TargetGroup.others))
+            //     {
+            //         players.ForEach(x =>
+            //         {
+            //             if (x.gameObject != actor.gameObject)
+            //             {
+            //                 x.Highlight(true);
+            //             }
+            //         });
+            //         // _inputHandler.layerMask.value |= (1 << otherLayerInt);
+            //     }
+            //     // _inputHandler.UpdateRaycastLayer();
+            // }
         }
 
         public void StartGame(int startIndex=0)
