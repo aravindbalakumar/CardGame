@@ -1,0 +1,33 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "count":  0,
+                   "logs":  [
+
+                            ],
+                   "source":  "capture_session",
+                   "cursor":  "v1:0:45960:0",
+                   "nextCursor":  null,
+                   "totalMatched":  0,
+                   "hasMore":  false,
+                   "complete":  true,
+                   "dropped":  8991,
+                   "coverage":  {
+                                    "oldestSeq":  8964,
+                                    "newestSeq":  45960,
+                                    "snapshotSeq":  45960,
+                                    "retained":  36997,
+                                    "capacity":  50000,
+                                    "maxBytes":  67108864,
+                                    "unknownTimeCount":  37,
+                                    "nativeTime":  "unknown",
+                                    "nativeMessageMayBeTruncated":  true,
+                                    "fullTextGuaranteedFor":  "managed",
+                                    "corruptRows":  0,
+                                    "durabilityIssue":  false,
+                                    "editorLogPath":  "D:/Projects/UnityProjects/CrimsonDoomGame/CardGame/Logs/Editor.log",
+                                    "editorLogAvailable":  true,
+                                    "editorLogSource":  "Editor.log is an external fallback; it is not imported into cursor history."
+                                }
+               }
+}

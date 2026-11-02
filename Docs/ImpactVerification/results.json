@@ -1,0 +1,99 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "completed":  true,
+                   "held":  false,
+                   "phase":  "Finished",
+                   "success":  true,
+                   "passed":  [
+                                  "Five-card gameplay hand initializes",
+                                  "Attack reaches impact at scale 0.55",
+                                  "Existing impact prefab spawns at scale 0.55",
+                                  "All nine child systems use uniform Hierarchy scaling at 0.55",
+                                  "Authored particle duration, lifetime, Start Size and Shape remain unchanged at 0.55",
+                                  "Effect is centered at the actual Wrag hit point at 0.55",
+                                  "Authored impact orientation is preserved at 0.55",
+                                  "Only the spawned instance scale changes at 0.55",
+                                  "HolySpell frame-20 synchronization is preserved at 0.55",
+                                  "Particles visibly emit at 0.55",
+                                  "Screenshots captured for before",
+                                  "Death follows impact at 0.55",
+                                  "Existing two-second death delay is unchanged at 0.55",
+                                  "Effect remains on Wrag without a travelling path at 0.55",
+                                  "Sequence completes naturally at 0.55",
+                                  "Particles and selection are cleaned up at 0.55",
+                                  "Cards, turn flow and character transforms remain unchanged at 0.55",
+                                  "Attack reaches impact at scale 1.35",
+                                  "Existing impact prefab spawns at scale 1.35",
+                                  "All nine child systems use uniform Hierarchy scaling at 1.35",
+                                  "Authored particle duration, lifetime, Start Size and Shape remain unchanged at 1.35",
+                                  "Effect is centered at the actual Wrag hit point at 1.35",
+                                  "Authored impact orientation is preserved at 1.35",
+                                  "Only the spawned instance scale changes at 1.35",
+                                  "HolySpell frame-20 synchronization is preserved at 1.35",
+                                  "Particles visibly emit at 1.35",
+                                  "Screenshots captured for after",
+                                  "Death follows impact at 1.35",
+                                  "Existing two-second death delay is unchanged at 1.35",
+                                  "Effect remains on Wrag without a travelling path at 1.35",
+                                  "Sequence completes naturally at 1.35",
+                                  "Particles and selection are cleaned up at 1.35",
+                                  "Cards, turn flow and character transforms remain unchanged at 1.35"
+                              ],
+                   "failed":  [
+
+                              ],
+                   "samples":  [
+                                   {
+                                       "scale":  0.55,
+                                       "worldBounds":  [
+                                                           13.5030022,
+                                                           13.5030022,
+                                                           16.8903236
+                                                       ],
+                                       "position":  [
+                                                        3.75319958,
+                                                        0.0431997478,
+                                                        -0.2
+                                                    ],
+                                       "viewportMin":  [
+                                                           0.331345558,
+                                                           -0.17083019,
+                                                           7.05017662
+                                                       ],
+                                       "viewportMax":  [
+                                                           1.09088945,
+                                                           1.17947006,
+                                                           23.9405
+                                                       ],
+                                       "emissionCount":  25,
+                                       "offscreen":  true
+                                   },
+                                   {
+                                       "scale":  1.35,
+                                       "worldBounds":  [
+                                                           33.143734,
+                                                           33.143734,
+                                                           41.458065
+                                                       ],
+                                       "position":  [
+                                                        3.75319958,
+                                                        0.0431997478,
+                                                        -0.2
+                                                    ],
+                                       "viewportMin":  [
+                                                           -0.221050024,
+                                                           -1.15286672,
+                                                           3.05043316
+                                                       ],
+                                       "viewportMax":  [
+                                                           1.64328492,
+                                                           2.16150665,
+                                                           44.5085
+                                                       ],
+                                       "emissionCount":  25,
+                                       "offscreen":  true
+                                   }
+                               ]
+               }
+}

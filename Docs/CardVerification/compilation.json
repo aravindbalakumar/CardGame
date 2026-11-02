@@ -1,0 +1,13 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "scriptPath":  "Assets/UI/CrimsonDoom/Scripts/GameViewUIToolkit.cs",
+                   "isCompiling":  false,
+                   "hasErrors":  false,
+                   "errorCount":  0,
+                   "errors":  [
+
+                              ],
+                   "nextAction":  "No compile errors were found for this script."
+               }
+}

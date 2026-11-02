@@ -1,0 +1,175 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using CrimsonDoom.UI;
+using Game;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnitySkills;
+
+public static class CrimsonCardVerification
+{
+    static readonly List<string> passed = new List<string>(), failed = new List<string>();
+    static GameViewUIToolkit view;
+    static Sprite[] originalSprites;
+    static bool completed, oldBackground;
+    static string temporaryAsset;
+    static string[] initialSprites;
+    static VisualElement Root => view.GetComponent<UIDocument>().rootVisualElement;
+    static List<Button> Cards => Root.Q("hand").Query<Button>().ToList();
+    static T Field<T>(string name) => (T)typeof(GameViewUIToolkit).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(view);
+    static void SetField(string name, object value) => typeof(GameViewUIToolkit).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(view, value);
+    static List<Sprite> Images => Cards.Select(c => c.Q<Image>("card-frame").sprite).ToList();
+    static bool Check(bool condition, string name) { (condition ? passed : failed).Add(name); return condition; }
+    static void Redraw(Sprite[] sprites)
+    {
+        SetField("folderCardSprites", sprites);
+        Field<List<Sprite>>("previewHand").Clear();
+        view.RefreshHand();
+    }
+    static void Click(Button button)
+    {
+        var method = typeof(Clickable).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .First(m => m.Name == "SimulateSingleClick");
+        method.Invoke(button.clickable, method.GetParameters().Select(p => p.ParameterType == typeof(int) ? (object)0 : null).ToArray());
+    }
+    static IEnumerator Wait(Func<bool> condition, string name, double seconds = 12d)
+    {
+        double until = Time.realtimeSinceStartupAsDouble + seconds;
+        while (!condition() && Time.realtimeSinceStartupAsDouble < until) yield return null;
+        Check(condition(), name);
+    }
+
+    [UnitySkill("crimson_cards_verify_start", "Verify five random sprite cards, hover, selection, dynamic discovery and battle in an existing Play session; quick checks startup only.",
+        Operation = SkillOperation.Execute, MutatesScene = true, MutatesAssets = true, RiskLevel = "medium", Outputs = new[] { "started" })]
+    public static object Start(bool quick = false)
+    {
+        if (!Application.isPlaying) return new { started = false };
+        completed = false; passed.Clear(); failed.Clear();
+        view = UnityEngine.Object.FindFirstObjectByType<GameViewUIToolkit>();
+        oldBackground = Application.runInBackground; Application.runInBackground = true;
+        view.StartCoroutine(Run(quick));
+        return new { started = true };
+    }
+
+    [UnitySkill("crimson_cards_verify_status", "Read card verification results.", Operation = SkillOperation.Query, Mode = SkillMode.SemiAuto,
+        Outputs = new[] { "completed", "success", "passed", "failed", "initialSprites" })]
+    public static object Status() => new { completed, success = completed && failed.Count == 0,
+        passed = passed.ToArray(), failed = failed.ToArray(), initialSprites };
+
+    static IEnumerator Run(bool quick)
+    {
+        var player = GameHandler.instance.player;
+        try
+        {
+            yield return Wait(() => player.intialized && player.CurrentHand.Count == 5, "Gameplay hand initializes exactly five cards");
+            view.RefreshHand(); yield return null;
+            originalSprites = GameViewUIToolkit.DiscoverCardSprites();
+            Check(Cards.Count == 5 && UnityEngine.Object.FindObjectsByType<Card>(FindObjectsSortMode.None).Length == 5,
+                "Exactly five Toolkit cards and five original card objects exist");
+            Check(Images.All(s => s != null && AssetDatabase.GetAssetPath(s).StartsWith("Assets/Sprites/Cards/")),
+                "Every displayed image is an imported sprite from the requested folder");
+            Check(Images.Distinct().Count() == 5, "Initial five card sprites are unique");
+            initialSprites = Images.Select(AssetDatabase.GetAssetPath).ToArray();
+            if (quick) yield break;
+
+            var firstDraw = Images.ToArray();
+            view.RefreshHand();
+            Check(Images.SequenceEqual(firstDraw), "Ordinary UI refresh preserves the random hand");
+            var draws = new HashSet<string>();
+            for (int i = 0; i < 30; i++)
+            {
+                Redraw(originalSprites);
+                Check(Cards.Count == 5 && Images.Distinct().Count() == 5, "Random draw " + i + " has exactly five unique sprites");
+                draws.Add(string.Join("|", Images.Select(s => s.name)));
+            }
+            Check(draws.Count > 1, "Repeated initializations produce different random selections");
+            firstDraw = Images.ToArray();
+            player.currentHand.Add(player.currentHand[0]); player.currentHand.Add(player.currentHand[0]);
+            view.RefreshHand();
+            Check(Cards.Count == 5 && Images.SequenceEqual(firstDraw), "An oversized external hand never renders more than five cards");
+            player.currentHand.RemoveRange(5, player.currentHand.Count - 5); view.RefreshHand(); yield return null;
+
+            var card = Cards[0]; var outline = card.Q("card-hover-outline");
+            Vector2 dimensions = card.layout.size;
+            using (var e = PointerEnterEvent.GetPooled()) { e.target = card; card.SendEvent(e); }
+            yield return new WaitForSecondsRealtime(0.2f);
+            Check(card.ClassListContains("card-hovered") && outline.resolvedStyle.opacity > 0.99f,
+                "Pointer enter shows the gold outline");
+            Check(outline.pickingMode == PickingMode.Ignore && card.layout.size == dimensions,
+                "Hover outline does not intercept input or alter card layout dimensions");
+            ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonDoomCards/hover.png"));
+            Click(card); yield return null;
+            Check(player.SelectedCard != null && card.ClassListContains("selected"), "Clicking a hovered card preserves normal selection");
+            var selected = player.SelectedCard;
+            using (var e = PointerLeaveEvent.GetPooled()) { e.target = card; card.SendEvent(e); }
+            yield return new WaitForSecondsRealtime(0.2f);
+            Check(!card.ClassListContains("card-hovered") && outline.resolvedStyle.opacity < 0.01f && player.SelectedCard == selected,
+                "Pointer leave removes the outline while retaining selection");
+            Click(card); yield return null;
+            Check(player.SelectedCard == null, "Repeated card click still deselects");
+
+            Redraw(Array.Empty<Sprite>());
+            Check(Cards.Count == 5 && Images.All(s => s == null) && Cards.All(c => c.ClassListContains("card-image-missing")),
+                "Empty sprite catalog renders exactly five safe labelled placeholders");
+            Redraw(null);
+            Check(Cards.Count == 5 && Images.All(s => s == null), "Missing sprite catalog is safe");
+            var legacy = UnityEngine.Object.FindObjectsByType<Card>(FindObjectsSortMode.None)[0];
+            var data = legacy.cardData;
+            var missingTexture = UnityEngine.Object.Instantiate(data);
+            missingTexture.metaData.cardTexture = null;
+            legacy.InitializeCard(missingTexture);
+            Check(legacy.cardData == missingTexture, "Missing legacy card texture does not throw during initialization");
+            legacy.InitializeCard(data);
+            UnityEngine.Object.Destroy(missingTexture);
+            Redraw(new[] { originalSprites[0], originalSprites[0], null, originalSprites[1], originalSprites[2] });
+            Check(Cards.Count == 5 && Images.All(s => s != null) && Images.Distinct().Count() == 3,
+                "Sparse catalog safely repeats only after exhausting its three unique valid sprites");
+            Redraw(originalSprites);
+
+            temporaryAsset = "Assets/Sprites/Cards/__CardDiscoveryTest_" + Guid.NewGuid().ToString("N") + ".png";
+            File.Copy(AssetDatabase.GetAssetPath(originalSprites[0]), temporaryAsset);
+            AssetDatabase.ImportAsset(temporaryAsset);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(temporaryAsset);
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.SaveAndReimport();
+            var added = AssetDatabase.LoadAllAssetsAtPath(temporaryAsset).OfType<Sprite>().Single();
+            Check(GameViewUIToolkit.DiscoverCardSprites().Contains(added), "A newly imported sprite is discovered automatically");
+            yield return Wait(() => Field<Sprite[]>("folderCardSprites").Contains(added),
+                "Editor project change automatically refreshes the live sprite catalog");
+            Check(Cards.Count == 5, "Adding a sprite never increases the displayed hand size");
+            AssetDatabase.DeleteAsset(temporaryAsset); temporaryAsset = null;
+            yield return Wait(() => Field<Sprite[]>("folderCardSprites").Length == originalSprites.Length,
+                "Removing a sprite automatically refreshes the live catalog");
+            Redraw(originalSprites); yield return null;
+
+            int enemyCard = player.CurrentHand.FindIndex(c => c.skill.targetGroup.Contains(Field<Game.ActorAndPlayers.AbstractActor>("opponent").gameObject.layer));
+            Click(Cards[enemyCard]); Click(Root.Q<Button>("enemy-target"));
+            Check(view.CombatSequenceRunning, "A folder-sprite card starts the existing battle sequence");
+            bool alwaysFive = true;
+            double deadline = Time.realtimeSinceStartupAsDouble + 15d;
+            while (view.CombatSequenceRunning && Time.realtimeSinceStartupAsDouble < deadline)
+            {
+                alwaysFive &= Cards.Count == 5;
+                yield return null;
+            }
+            Check(alwaysFive && !view.CombatSequenceRunning && Cards.Count == 5 && player.SelectedCard == null,
+                "Five cards remain throughout battle and normal completion clears selection");
+            Check(Math.Abs(view.LastDeathTime - view.LastImpactTime - 2d) <= Time.deltaTime + 0.001d,
+                "Existing direct-impact battle timing remains intact");
+            ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonDoomCards/five-cards.png"));
+        }
+        finally
+        {
+            if (temporaryAsset != null) { AssetDatabase.DeleteAsset(temporaryAsset); temporaryAsset = null; }
+            if (player.currentHand.Count > 5) player.currentHand.RemoveRange(5, player.currentHand.Count - 5);
+            if (originalSprites != null && view != null) Redraw(originalSprites);
+            Application.runInBackground = oldBackground; completed = true;
+        }
+    }
+}

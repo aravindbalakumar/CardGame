@@ -1,0 +1,66 @@
+﻿{
+    "jobId":  "17cb7e19",
+    "kind":  "compile",
+    "status":  "completed",
+    "progress":  100,
+    "currentStage":  "completed",
+    "progressStage":  "completed",
+    "startedAt":  1793609299,
+    "updatedAt":  1793609324,
+    "processedItems":  0,
+    "totalItems":  0,
+    "resultSummary":  "Script compilation after \u0027asset_refresh\u0027 completed.",
+    "error":  null,
+    "warnings":  [
+
+                 ],
+    "reportId":  null,
+    "relatedWorkflowId":  null,
+    "canCancel":  false,
+    "recentProgress":  [
+                           {
+                               "timestamp":  1793609299,
+                               "progress":  0,
+                               "stage":  "waiting_domain_reload",
+                               "description":  "Asset refresh accepted; waiting for the script compilation it started."
+                           },
+                           {
+                               "timestamp":  1793609324,
+                               "progress":  90,
+                               "stage":  "verifying",
+                               "description":  "Collecting compilation diagnostics."
+                           },
+                           {
+                               "timestamp":  1793609324,
+                               "progress":  100,
+                               "stage":  "completed",
+                               "description":  "Script compilation after \u0027asset_refresh\u0027 completed."
+                           }
+                       ],
+    "terminal":  true,
+    "resultData":  {
+                       "operation":  "asset_refresh",
+                       "compilation":  {
+                                           "scope":  "project",
+                                           "compiled":  true,
+                                           "cycleId":  27,
+                                           "startedAtUtcTicks":  639292061012005306,
+                                           "assemblyCount":  1,
+                                           "success":  true,
+                                           "domainLoaded":  true,
+                                           "domainLoadedAtUtcTicks":  639292061148845307,
+                                           "scriptPaths":  [
+                                                               "Assets/Editor/CrimsonImpactVerification.cs"
+                                                           ],
+                                           "isCompiling":  false,
+                                           "hasErrors":  false,
+                                           "errorCount":  0,
+                                           "errors":  [
+
+                                                      ],
+                                           "finishedAtUtc":  "2026-11-02T08:48:24.3984899Z",
+                                           "nextAction":  "Compilation succeeded and the new script domain is loaded."
+                                       }
+                   },
+    "waitTimedOut":  false
+}

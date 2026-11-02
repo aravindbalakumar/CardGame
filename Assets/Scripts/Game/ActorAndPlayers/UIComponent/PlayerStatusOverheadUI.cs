@@ -16,6 +16,7 @@ namespace Game.ActorAndPlayers
 
         public void LoadStausUI(AbstractActor actor, Camera worldCamera,Vector3 worldPosition)
         {
+            ResetComponent();
             this.actor = actor;
             this.transform.position = worldPosition;
             healthBar.maxValue = this.actor.MaxHealth;
@@ -25,8 +26,8 @@ namespace Game.ActorAndPlayers
             healthBar.value = this.actor.Health;
             playerNameText.text = actor.name;
             // armorCountText.text = player.Armor.ToString();
-            healthBar.onValueChanged.AddListener(OnSliderUpdate);
-            actor.OnPlayerUIUpdate += StatusUpdate;
+            OnSliderUpdate(healthBar.value);
+            if (isActiveAndEnabled) BindActor();
         }
 
         private void StatusUpdate(bool alive, int health, int armor)
@@ -41,8 +42,20 @@ namespace Game.ActorAndPlayers
         private void ResetComponent()
         {
             healthBar.onValueChanged.RemoveListener(OnSliderUpdate);
-            healthBar.onValueChanged.RemoveAllListeners();
-            actor.OnPlayerUIUpdate -= StatusUpdate;
+            if (actor != null) actor.OnPlayerUIUpdate -= StatusUpdate;
+        }
+
+        private void BindActor()
+        {
+            healthBar.onValueChanged.AddListener(OnSliderUpdate);
+            actor.OnPlayerUIUpdate += StatusUpdate;
+            StatusUpdate(actor.Health > 0, actor.Health, actor.Armor);
+            OnSliderUpdate(healthBar.value);
+        }
+
+        private void OnEnable()
+        {
+            if (actor != null) BindActor();
         }
 
         private void OnDestroy()

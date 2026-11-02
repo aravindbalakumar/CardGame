@@ -1,0 +1,239 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using CrimsonDoom.UI;
+using Game;
+using Game.ActorAndPlayers;
+using Game.DataStructures;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
+using UnitySkills;
+
+// Temporary Editor-only verification. Removed from Assets after testing.
+public static class CrimsonCounterattackVerification
+{
+    static GameViewUIToolkit view;
+    static GameHandler handler;
+    static Player2D player;
+    static BotPlayer bot;
+    static SpriteRenderer hero, enemy, bite;
+    static readonly List<string> passed = new List<string>(), failed = new List<string>(), turns = new List<string>();
+    static readonly List<object> measurements = new List<object>();
+    static bool completed, oldBackground;
+    static string phase = "Idle";
+    static int healthEvents, rootCount, oldCapture;
+    static float oldTimeScale;
+    static T Field<T>(string name) => (T)typeof(GameViewUIToolkit).GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(view);
+    static void SetField(string name, object value) => typeof(GameViewUIToolkit).GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).SetValue(view, value);
+    static float[] Vec(Vector3 v) => new[] { v.x, v.y, v.z };
+    static bool Check(bool ok, string name) { (ok ? passed : failed).Add(name); return ok; }
+    static VisualElement Root => view.GetComponent<UIDocument>().rootVisualElement;
+    static Button End => Root.Q<Button>("end-turn");
+    static List<Button> Cards => Root.Q("hand").Query<Button>().ToList();
+    static void Click(Button button)
+    {
+        var method = typeof(Clickable).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .First(m => m.Name == "SimulateSingleClick");
+        method.Invoke(button.clickable, method.GetParameters().Select(p => p.ParameterType == typeof(int) ? (object)0 : null).ToArray());
+    }
+    static IEnumerator Wait(Func<bool> condition, string name, double timeout = 25d)
+    {
+        double until = Time.realtimeSinceStartupAsDouble + timeout;
+        while (!condition() && Time.realtimeSinceStartupAsDouble < until) yield return null;
+        if (!Check(condition(), name)) throw new InvalidOperationException(name);
+    }
+
+    [UnitySkill("crimson_counterattack_inspect", "Inspect current scene actors, their existing animation clips and states, and missing script references without modifying assets.",
+        Operation = SkillOperation.Query, Mode = SkillMode.SemiAuto, Outputs = new[] { "actors", "missingScripts", "rootCount" })]
+    public static object Inspect()
+    {
+        var scene = SceneManager.GetActiveScene();
+        var actors = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Animator>(true)).Select(a => new {
+            gameObject = a.name, active = a.gameObject.activeSelf, enabled = a.enabled,
+            position = Vec(a.transform.position), scale = Vec(a.transform.localScale),
+            controller = AssetDatabase.GetAssetPath(a.runtimeAnimatorController),
+            states = a.runtimeAnimatorController is AnimatorController c ?
+                c.layers.SelectMany(l => l.stateMachine.states.Select(s => new { name = s.state.name, speed = s.state.speed,
+                    transitionCount = s.state.transitions.Length })).ToArray() : null,
+            clips = a.runtimeAnimatorController == null ? null : a.runtimeAnimatorController.animationClips.Select(c => new {
+                name = c.name, path = AssetDatabase.GetAssetPath(c), length = c.length, fps = c.frameRate, loop = c.isLooping,
+                events = c.events.Length }).ToArray()
+        }).ToArray();
+        return new { actors, missingScripts = scene.GetRootGameObjects().Sum(g => g.GetComponentsInChildren<Component>(true).Count(c => c == null)),
+            rootCount = scene.rootCount };
+    }
+
+    [UnitySkill("crimson_counterattack_test", "In an already running Play session exercise actual card/target/End Turn callbacks, counterattack timing and damage, duplicate clicks, pause, interruption, missing pose and lethal damage; save Game View captures under Temp.",
+        Operation = SkillOperation.Execute, MutatesScene = true, RiskLevel = "medium", Outputs = new[] { "started" })]
+    public static object Start()
+    {
+        if (!Application.isPlaying) return new { started = false };
+        view = UnityEngine.Object.FindFirstObjectByType<GameViewUIToolkit>();
+        handler = GameHandler.instance; player = handler.player; bot = Field<AbstractActor>("opponent") as BotPlayer;
+        hero = Field<SpriteRenderer>("heroRenderer"); enemy = Field<SpriteRenderer>("enemyRenderer"); bite = Field<SpriteRenderer>("wragAttack");
+        passed.Clear(); failed.Clear(); turns.Clear(); measurements.Clear(); completed = false; healthEvents = 0;
+        oldBackground = Application.runInBackground; oldCapture = Time.captureFramerate; oldTimeScale = Time.timeScale;
+        Application.runInBackground = true; Time.captureFramerate = 60; Time.timeScale = 1f;
+        rootCount = SceneManager.GetActiveScene().rootCount;
+        handler.StartCoroutine(Run());
+        return new { started = true };
+    }
+
+    [UnitySkill("crimson_counterattack_status", "Read counterattack verification results.", Operation = SkillOperation.Query,
+        Mode = SkillMode.SemiAuto, Outputs = new[] { "completed", "phase", "success", "passed", "failed", "measurements", "turns" })]
+    public static object Status() => new { completed, phase, success = completed && failed.Count == 0,
+        passed = passed.ToArray(), failed = failed.ToArray(), measurements = measurements.ToArray(), turns = turns.ToArray() };
+
+    static void OnTurn(AbstractActor actor) => turns.Add(actor == null ? "Finished" : actor.name);
+    static void OnHealth(bool alive, int health, int armor) => healthEvents++;
+
+    static IEnumerator PlayerAttack(string label)
+    {
+        phase = label + " Voss";
+        int index = player.CurrentHand.FindIndex(c => c.skill.cardAction.actionType == ActionType.Damage &&
+            c.skill.targetGroup.Contains(bot.gameObject.layer));
+        if (!Check(index >= 0, label + ": existing enemy damage card available")) yield break;
+        int health = bot.Health;
+        var card = player.CurrentHand[index];
+        double castStarted = Time.timeAsDouble;
+        Click(Cards[index]);
+        Check(player.SelectedCard != null && Root.Q<Button>("enemy-target").enabledInHierarchy, label + ": card enters target-selection mode");
+        Click(Root.Q<Button>("enemy-target"));
+        Check(view.CombatSequenceRunning && !End.enabledInHierarchy && handler.IsPlayerTurn, label + ": Voss animation locks End Turn");
+        for (int i = 0; i < 5; i++) { Click(End); Click(Root.Q<Button>("enemy-target")); }
+        yield return Wait(() => view.CombatPhase == "Impact", label + ": Voss impact");
+        measurements.Add(new { label, secondsToImpact = view.LastImpactTime - castStarted });
+        Check(Math.Abs(view.LastImpactTime - castStarted - (3d / 1.5d * 20d / 36d)) <= Time.deltaTime + .00001d,
+            label + ": faster spell retains frame-20 impact timing");
+        Check(hero.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Base Layer.HolySpellAnim"), label + ": existing HolySpell animation plays");
+        Check(bot.Health == health - Mathf.RoundToInt(card.skill.cardAction.value * .35f), label + ": original card damage occurs once");
+        yield return Wait(() => view.CombatPhase == "Death", label + ": Wrag death pose");
+        double delay = view.LastDeathTime - view.LastImpactTime;
+        measurements.Add(new { label, impactToDeathSeconds = delay });
+        Check(delay >= 1d - .000001d && delay <= 1d + Time.deltaTime + .000001d, label + ": death delay is one game-time second");
+        yield return Wait(() => !view.CombatSequenceRunning, label + ": Voss sequence completes");
+        Check(End.enabledInHierarchy && player.SelectedCard == null && handler.IsPlayerTurn && bot.Health > 0,
+            label + ": End Turn enabled after Voss finishes and surviving Wrag restored");
+    }
+
+    static IEnumerator Counterattack(string label, bool lethal = false)
+    {
+        phase = label + " Wrag";
+        if (lethal) player.AddHealth(1 - player.Health);
+        int health = player.Health, eventsBefore = healthEvents, turnsBefore = turns.Count;
+        Click(End);
+        Check(handler.CurrentTurnActor == bot && bot.isMyTurn && !player.isMyTurn && view.CombatPhase == "CounterWindup",
+            label + ": End Turn advances existing manager to Wrag");
+        Check(bite.gameObject.activeInHierarchy && bite.enabled && !enemy.enabled &&
+            bite.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("Base Layer.BitingWragAnim"), label + ": existing hierarchy bite animation plays");
+        Check(!End.enabledInHierarchy && Cards.Count == 5 && Cards.All(b => !b.enabledInHierarchy), label + ": all player interactions lock during counterattack");
+        for (int i = 0; i < 12; i++) { Click(End); Click(Cards[0]); Click(Root.Q<Button>("enemy-target")); }
+        Check(!handler.TryEndTurn(player) && player.Health == health && player.SelectedCard == null,
+            label + ": repeated clicks cannot duplicate or skip the attack");
+        Time.timeScale = 0f;
+        // The frame that requested pause retains its already computed deltaTime.
+        yield return null;
+        var before = bite.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime;
+        double until = Time.realtimeSinceStartupAsDouble + .12d;
+        while (Time.realtimeSinceStartupAsDouble < until) yield return null;
+        Check(bite.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime == before && player.Health == health,
+            label + ": pause freezes windup and damage");
+        Time.timeScale = 1f;
+        yield return Wait(() => view.CombatPhase == "CounterImpact", label + ": Wrag reaches impact");
+        var state = hero.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
+        var effect = Field<GameObject>("impactEffect");
+        var wragState = bite.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0);
+        Check(state.IsName("Base Layer.HurtVossAnim") && state.normalizedTime < .03f, label + ": Voss_Hurt starts on the impact frame");
+        Check(wragState.normalizedTime >= 21f / 36f - .0001f && wragState.normalizedTime < 21f / 36f + .03f,
+            label + ": hit synchronized to bite frame 21");
+        Vector2 local = (Vector2.Scale(hero.sprite.rect.size, new Vector2(.5f, .58f)) - hero.sprite.pivot) / hero.sprite.pixelsPerUnit;
+        var expectedPosition = hero.transform.TransformPoint(local) - Camera.main.transform.forward * .2f;
+        Check(effect != null && Vector3.Distance(effect.transform.position, expectedPosition) < .0001f &&
+            effect.transform.localScale == Vector3.one * 1.35f, label + ": enlarged existing impact spawns directly on hurt Voss");
+        int damage = Mathf.RoundToInt(bot.bot_Attack_Skill[0].cardAction.value * .35f);
+        Check(player.Health == health - damage && healthEvents == eventsBefore + 1, label + ": configured skill applies existing damage once at impact");
+        bot.UseSkill(bot.bot_Attack_Skill[0], player);
+        Check(player.Health == health - damage, label + ": duplicate UseSkill is rejected in the same turn");
+        Vector3 impactPosition = effect.transform.position;
+        measurements.Add(new { label, attackNormalizedTime = wragState.normalizedTime, hurtNormalizedTime = state.normalizedTime,
+            hitPosition = Vec(impactPosition), healthBefore = health, healthAfter = player.Health, damage });
+        for (int i = 0; i < 6; i++) yield return null;
+        Check(effect.transform.position == impactPosition && effect.GetComponentsInChildren<ParticleSystem>().Sum(p => p.particleCount) > 0,
+            label + ": particles emit on Voss without travelling");
+        ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonCounterattack/" + label + "-hit-game.png"));
+        yield return Wait(() => !view.CombatSequenceRunning, label + ": counterattack completes");
+        Check(!handler.CardActionInProgress && player.SelectedCard == null && Field<GameObject>("impactEffect") == null &&
+            !bite.gameObject.activeSelf && hero.enabled && enemy.enabled, label + ": visuals, VFX and input lock clean up");
+        Check(player.Health == health - damage && healthEvents == eventsBefore + 1 && turns.Count == turnsBefore + 2,
+            label + ": one hit and one complete turn round-trip");
+        if (!lethal)
+        {
+            Check(handler.IsPlayerTurn && player.isMyTurn && !bot.isMyTurn && Cards.Count == 5 && Cards.All(b => b.enabledInHierarchy) &&
+                !End.enabledInHierarchy, label + ": player control returns with five cards; next attack re-arms End Turn");
+            Click(Cards[0]);
+            Check(player.SelectedCard != null, label + ": card selection works after counterattack");
+            Click(Cards[0]);
+        }
+        else Check(player.Health <= 0 && handler.CurrentTurnActor == null && !End.enabledInHierarchy && Cards.All(b => !b.enabledInHierarchy),
+            label + ": lethal hit completes hurt and leaves battle input disabled");
+    }
+
+    static IEnumerator Run()
+    {
+        handler.TurnChanged += OnTurn; player.OnPlayerUIUpdate += OnHealth;
+        try
+        {
+            yield return Wait(() => player.intialized && bot.intialized && player.CurrentHand.Count == 5 && handler.IsPlayerTurn, "Existing game initializes");
+            Check(Cards.Count == 5 && Cards.All(b => b.enabledInHierarchy) && !End.enabledInHierarchy, "Initial five cards enabled; End Turn awaits Voss attack");
+            Click(End);
+            Check(handler.IsPlayerTurn && !view.CombatSequenceRunning, "Early End Turn click is ignored");
+            yield return PlayerAttack("normal");
+            yield return Counterattack("normal");
+
+            yield break;
+            /* Previous extensive regression scenarios are omitted for this timing smoke test.
+            yield return PlayerAttack("interrupt");
+            int health = player.Health;
+            Click(End);
+            Check(view.CombatPhase == "CounterWindup", "Interruption test enters Wrag windup");
+            view.enabled = false;
+            yield return null;
+            Check(handler.IsPlayerTurn && !handler.CardActionInProgress && player.Health == health &&
+                !bite.gameObject.activeSelf && enemy.enabled, "Disabling presentation cancels safely without damage or stuck bot turn");
+            view.enabled = true;
+            yield return null;
+            Check(Cards.Count == 5 && Cards.All(b => b.enabledInHierarchy), "Re-enabling UI restores cards and turn subscription");
+
+            yield return PlayerAttack("missing-reference");
+            SetField("wragAttack", null);
+            Click(End);
+            Check(handler.IsPlayerTurn && !handler.CardActionInProgress && !view.CombatSequenceRunning && player.Health == health,
+                "Missing bite reference ends turn safely without damage or exceptions");
+            SetField("wragAttack", bite);
+
+            yield return PlayerAttack("recovery");
+            yield return Counterattack("recovery");
+            // Object.Destroy retires the finished VFX at the end of its frame.
+            yield return null;
+            Check(SceneManager.GetActiveScene().rootCount == rootCount && UnityEngine.Object.FindObjectsByType<BotPlayer>(FindObjectsSortMode.None).Length == 1 &&
+                UnityEngine.Object.FindObjectsByType<Player2D>(FindObjectsSortMode.None).Length == 1, "No duplicate scene characters or leaked effect roots");
+
+            yield return PlayerAttack("lethal");
+            yield return Counterattack("lethal", true);
+            */
+        }
+        finally
+        {
+            handler.TurnChanged -= OnTurn; player.OnPlayerUIUpdate -= OnHealth;
+            SetField("wragAttack", bite);
+            Time.timeScale = oldTimeScale; Time.captureFramerate = oldCapture; Application.runInBackground = oldBackground;
+            completed = true; phase = "Finished";
+        }
+    }
+}

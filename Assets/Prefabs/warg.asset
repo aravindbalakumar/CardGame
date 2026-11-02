@@ -66,8 +66,7 @@ MonoBehaviour:
   m_NodeModelsInfo:
   - Name: On Start
     Story: 
-    RuntimeTypeString: Unity.Behavior.Start, Unity.Behavior, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+    RuntimeTypeString: Unity.Behavior.Start, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     RuntimeTypeID:
       m_Value0: 3335272451348827663
       m_Value1: 11549843281177505721
@@ -76,8 +75,7 @@ MonoBehaviour:
     IsPlaceholder: 0
   - Name: Run In Parallel
     Story: 
-    RuntimeTypeString: Unity.Behavior.ParallelAllComposite, Unity.Behavior, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
+    RuntimeTypeString: Unity.Behavior.ParallelAllComposite, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     RuntimeTypeID:
       m_Value0: 6216542881172158703
       m_Value1: 2191282456596108218
@@ -86,26 +84,22 @@ MonoBehaviour:
     IsPlaceholder: 0
   - Name: Set Animator Integer
     Story: 'Set [Parameter] in [Animator] to [Value]'
-    RuntimeTypeString: Unity.Behavior.SetAnimatorIntAction, Unity.Behavior, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
+    RuntimeTypeString: Unity.Behavior.SetAnimatorIntAction, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     RuntimeTypeID:
       m_Value0: 6972868819752319027
       m_Value1: 5724265641441191532
     Variables:
     - Name: Parameter
       Type:
-        m_SerializableType: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
-          PublicKeyToken=b77a5c561934e089
+        m_SerializableType: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
       Tooltip: 
     - Name: Animator
       Type:
-        m_SerializableType: UnityEngine.Animator, UnityEngine.AnimationModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
+        m_SerializableType: UnityEngine.Animator, UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
       Tooltip: 
     - Name: Value
       Type:
-        m_SerializableType: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
-          PublicKeyToken=b77a5c561934e089
+        m_SerializableType: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
       Tooltip: 
     NamedChildren: []
     IsPlaceholder: 0
@@ -135,8 +129,7 @@ MonoBehaviour:
         PortModels:
         - rid: 6425834582671360228
         NodeType:
-          m_SerializableType: Unity.Behavior.Start, Unity.Behavior, Version=0.0.0.0,
-            Culture=neutral, PublicKeyToken=null
+          m_SerializableType: Unity.Behavior.Start, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
         NodeTypeID:
           m_Value0: 3335272451348827663
           m_Value1: 11549843281177505721
@@ -165,8 +158,7 @@ MonoBehaviour:
         - rid: 6425834582671360236
         - rid: 6425834582671360237
         NodeType:
-          m_SerializableType: Unity.Behavior.ParallelAllComposite, Unity.Behavior,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+          m_SerializableType: Unity.Behavior.ParallelAllComposite, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
         NodeTypeID:
           m_Value0: 6216542881172158703
           m_Value1: 2191282456596108218
@@ -204,8 +196,7 @@ MonoBehaviour:
         - rid: 6425834582671360243
         - rid: 6425834582671360244
         NodeType:
-          m_SerializableType: Unity.Behavior.SetAnimatorIntAction, Unity.Behavior,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+          m_SerializableType: Unity.Behavior.SetAnimatorIntAction, Unity.Behavior, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
         NodeTypeID:
           m_Value0: 6972868819752319027
           m_Value1: 5724265641441191532
@@ -237,8 +228,7 @@ MonoBehaviour:
       data:
         FieldName: Parameter
         Type:
-          m_SerializableType: System.String, mscorlib, Version=4.0.0.0, Culture=neutral,
-            PublicKeyToken=b77a5c561934e089
+          m_SerializableType: System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
         LocalValue:
           rid: 6425834582671360248
         LinkedVariable:
@@ -248,8 +238,7 @@ MonoBehaviour:
       data:
         FieldName: Animator
         Type:
-          m_SerializableType: UnityEngine.Animator, UnityEngine.AnimationModule,
-            Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+          m_SerializableType: UnityEngine.Animator, UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
         LocalValue:
           rid: 6425834582671360249
         LinkedVariable:
@@ -259,8 +248,7 @@ MonoBehaviour:
       data:
         FieldName: Value
         Type:
-          m_SerializableType: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
-            PublicKeyToken=b77a5c561934e089
+          m_SerializableType: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
         LocalValue:
           rid: 6425834582671360250
         LinkedVariable:

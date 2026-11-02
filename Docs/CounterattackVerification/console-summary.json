@@ -1,0 +1,28 @@
+﻿{
+    "runtimeErrorCount":  0,
+    "verificationPassed":  108,
+    "verificationFailed":  0,
+    "expectedTestWarning":  "Missing attack reference deliberately injected; safely skipped that turn and restored reference.",
+    "warnings":  [
+                     {
+                         "type":  "Warning",
+                         "count":  1,
+                         "message":  "Wrag counterattack needs its existing bite pose, Voss hurt state, impact prefab and attack skill. Ending this turn safely."
+                     },
+                     {
+                         "type":  "Warning",
+                         "count":  1,
+                         "message":  "134 node options failed to load and were skipped."
+                     },
+                     {
+                         "type":  "Warning",
+                         "count":  1,
+                         "message":  "Serialized file \"Assets/Plugins/Demigiant/DOTween/DOTween.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade."
+                     },
+                     {
+                         "type":  "Warning",
+                         "count":  1,
+                         "message":  "Serialized file \"Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade."
+                     }
+                 ]
+}

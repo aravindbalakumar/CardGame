@@ -75,6 +75,12 @@
 .card-cost { position: absolute; left: 5%; top: 3%; width: 17%; height: 12%; font-size: 22px; -unity-text-align: middle-center; background-color: rgb(60, 38, 22); border-radius: 16px; }
 .card-description { position: absolute; left: 11%; right: 10%; top: 66%; bottom: 8%; white-space: normal; -unity-text-align: middle-center; color: var(--ink); font-size: 14px; -unity-font-definition: url("../../Font/CrimsonText/CrimsonText-Regular.ttf"); }
 .preview-card .card-title, .preview-card .card-cost, .preview-card .card-art { display: none; }
+.folder-card .card-title, .folder-card .card-cost, .folder-card .card-art, .folder-card .card-description { display: none; }
+.folder-card.card-image-missing { background-color: rgba(31, 24, 20, 0.85); }
+.folder-card.card-image-missing .card-title { display: flex; }
+.card-hover-outline { position: absolute; left: -3px; right: -3px; top: -3px; bottom: -3px; border-width: 2px; border-color: rgb(255, 213, 115); border-radius: 10px; opacity: 0; transition-property: opacity; transition-duration: 0.1s; }
+.hand-card.card-hovered > .card-hover-outline { opacity: 1; }
+.hand-card:disabled > .card-hover-outline { opacity: 0; }
 .controls { width: 18%; flex-shrink: 0; justify-content: flex-end; padding: 0 10px 12px 25px; }
 .end-turn { height: 80px; margin: 0 0 18px 0; padding: 0; background-color: rgba(0, 0, 0, 0); background-size: 100% 100%; border-width: 0; color: var(--gold); font-size: 27px; -unity-text-align: middle-center; }
 .end-turn:hover { -unity-background-image-tint-color: rgb(255, 220, 161); color: rgb(255, 221, 171); }

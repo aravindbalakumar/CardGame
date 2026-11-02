@@ -1,0 +1,23 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "completed":  true,
+                   "success":  true,
+                   "passed":  [
+                                  "Gameplay hand initializes exactly five cards",
+                                  "Exactly five Toolkit cards and five original card objects exist",
+                                  "Every displayed image is an imported sprite from the requested folder",
+                                  "Initial five card sprites are unique"
+                              ],
+                   "failed":  [
+
+                              ],
+                   "initialSprites":  [
+                                          "Assets/Sprites/Cards/Crimson_Doom_Sanctified_Aegis.png",
+                                          "Assets/Sprites/Cards/Crimson_Doom_Dead_Weight.png",
+                                          "Assets/Sprites/Cards/Crimson_Doom_Blood_Tithe.png",
+                                          "Assets/Sprites/Cards/Crimson_Doom_Heretics_Flame.png",
+                                          "Assets/Sprites/Cards/Crimson_Doom_Divine_Intervention.png"
+                                      ]
+               }
+}

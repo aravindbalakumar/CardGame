@@ -1,0 +1,216 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using CrimsonDoom.UI;
+using Game;
+using Game.ActorAndPlayers;
+using Game.DataStructures;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnitySkills;
+
+// Temporary integration checks; drives existing UI callbacks without creating any GameObjects.
+public static class CrimsonBattleVerification
+{
+    static readonly List<string> passed = new List<string>(), failed = new List<string>();
+    static readonly List<object> timings = new List<object>();
+    static GameViewUIToolkit view;
+    static GameHandler handler;
+    static Player2D player;
+    static AbstractActor enemy;
+    static SpriteRenderer hero, enemyRenderer, death;
+    static GameObject prefab;
+    static bool completed, running;
+    static int priorCapture;
+    static bool priorBackground;
+    static double initialTime;
+    static VisualElement Root => view.GetComponent<UIDocument>().rootVisualElement;
+    static List<Button> Cards => Root.Q("hand").Query<Button>().ToList();
+    static T Field<T>(string name) => (T)typeof(GameViewUIToolkit).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(view);
+    static void SetField(string name, object value) => typeof(GameViewUIToolkit).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic).SetValue(view, value);
+    static bool Check(bool condition, string message)
+    {
+        (condition ? passed : failed).Add(message);
+        return condition;
+    }
+    static void Click(Button button)
+    {
+        var method = typeof(Clickable).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .FirstOrDefault(m => m.Name == "SimulateSingleClick");
+        if (!Check(method != null && button != null, "UI Toolkit clickable callback is available")) return;
+        var args = method.GetParameters().Select(p => p.ParameterType == typeof(int) ? (object)0 : null).ToArray();
+        method.Invoke(button.clickable, args);
+    }
+    static IEnumerator Wait(Func<bool> condition, string description, double timeout = 15d)
+    {
+        double deadline = Time.realtimeSinceStartupAsDouble + timeout;
+        while (!condition() && Time.realtimeSinceStartupAsDouble < deadline) yield return null;
+        Check(condition(), description);
+    }
+    static GameObject[] Effects() => UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
+        .Where(t => t.parent == null && t.name == prefab.name + "(Clone)").Select(t => t.gameObject).ToArray();
+
+    [UnitySkill("crimson_battle_verify_start", "Test the complete battle and interruptions in an already running Play session.",
+        Operation = SkillOperation.Execute, MutatesScene = true, RiskLevel = "medium", Outputs = new[] { "started" })]
+    public static object Start()
+    {
+        if (!Application.isPlaying || running) return new { started = false };
+        passed.Clear(); failed.Clear(); timings.Clear(); completed = false; running = true;
+        handler = GameHandler.instance; player = handler.player;
+        view = UnityEngine.Object.FindFirstObjectByType<GameViewUIToolkit>();
+        priorCapture = Time.captureFramerate; priorBackground = Application.runInBackground;
+        Time.captureFramerate = 60; Application.runInBackground = true;
+        initialTime = Time.timeAsDouble;
+        view.StartCoroutine(Run());
+        return new { started = true };
+    }
+
+    [UnitySkill("crimson_battle_verify_status", "Return the battle verification results without modifying the project.",
+        Operation = SkillOperation.Query, Mode = SkillMode.SemiAuto,
+        Outputs = new[] { "completed", "success", "phase", "passed", "failed", "timings", "gameSeconds" })]
+    public static object Status() => new { completed, success = completed && failed.Count == 0,
+        phase = view != null ? view.CombatPhase : "Unavailable", passed = passed.ToArray(), failed = failed.ToArray(),
+        timings = timings.ToArray(), gameSeconds = Time.timeAsDouble - initialTime };
+
+    static IEnumerator Run()
+    {
+        try
+        {
+            yield return Wait(() => player.intialized && player.CurrentHand.Count == 6, "Player and six-card hand initialize");
+            view.RefreshHand();
+            if (!Check(Cards.Count == 6, "UI Toolkit renders six live cards")) yield break;
+            enemy = Field<AbstractActor>("opponent"); hero = Field<SpriteRenderer>("heroRenderer");
+            enemyRenderer = Field<SpriteRenderer>("enemyRenderer"); death = Field<SpriteRenderer>("deathWrag");
+            prefab = Field<GameObject>("impactVfxPrefab");
+            Check(!Field<Transform>("legacyCardParent").GetComponentInParent<Canvas>().enabled,
+                "Legacy Canvas is hidden while its card objects stay active for UI Toolkit callbacks");
+            Check(Field<SpriteRenderer>("holySpellVoss") == hero, "Spell reuses the existing Voss character");
+            for (int i = 0; i < Cards.Count; i++)
+            {
+                Click(Cards[i]); yield return null;
+                Check(player.SelectedCard != null && !view.CombatSequenceRunning && Root.Q<Button>("enemy-target").enabledSelf,
+                    "Card " + i + " waits for a Wrag click, including self-target cards");
+                Click(Cards[i]); yield return null;
+                Check(player.SelectedCard == null, "Card " + i + " retains toggle deselection");
+            }
+            int damage = player.CurrentHand.FindIndex(c => c.skill.targetGroup.Contains(enemy.gameObject.layer) && c.skill.cardAction.actionType == ActionType.Damage);
+            int self = player.CurrentHand.FindIndex(c => c.skill.targetGroup.Contains(player.gameObject.layer) && c.skill.cardAction.actionType == ActionType.Armor);
+            if (!Check(damage >= 0 && self >= 0, "Existing hand contains enemy damage and self armor cards")) yield break;
+            yield return FullSequence(damage, false);
+            if (failed.Count > 0) yield break;
+            yield return FullSequence(self, true);
+            if (failed.Count > 0) yield break;
+
+            Click(Cards[damage]); Click(Root.Q<Button>("enemy-target")); yield return null;
+            view.enabled = false; yield return null;
+            Check(Field<Transform>("legacyCardParent").GetComponentInParent<Canvas>().enabled,
+                "Disabling UI Toolkit restores the authored legacy Canvas");
+            Check(!view.CombatSequenceRunning && !handler.CardActionInProgress && player.SelectedCard == null,
+                "Disabling the UI during casting cancels and unlocks safely");
+            view.enabled = true; yield return null; view.RefreshHand();
+            Check(handler.CardActionAnimation != null && handler.CardActionAnimation.GetInvocationList().Length == 1,
+                "Re-enabling UI installs one presentation handler");
+
+            SetField("impactVfxPrefab", null);
+            Click(Cards[damage]); Click(Root.Q<Button>("enemy-target")); yield return null;
+            Check(!view.CombatSequenceRunning && !handler.CardActionInProgress && player.SelectedCard != null,
+                "Missing impact reference rejects the attack without applying a card");
+            SetField("impactVfxPrefab", prefab); player.UpdateSelectedCard(null); view.RefreshHand();
+
+            Click(Cards[damage]); Click(Root.Q<Button>("enemy-target"));
+            yield return Wait(() => view.CombatPhase == "Impact", "Interruption test reaches impact");
+            hero.GetComponent<Animator>().enabled = false; yield return null; yield return null;
+            Check(!view.CombatSequenceRunning && !handler.CardActionInProgress && view.LastDeathTime == 0d,
+                "Interrupted spell Animator cancels pending death and releases input");
+            hero.GetComponent<Animator>().enabled = true;
+            hero.GetComponent<Animator>().Play("Base Layer.idle", 0, 0f);
+            yield return null;
+            Check(Effects().Length == 0 && enemyRenderer.enabled && !death.gameObject.activeSelf,
+                "Interruption removes impact particles and restores authored character visibility");
+            enemy.AddHealth(1 - enemy.Health);
+            view.RefreshHand();
+            Click(Cards[damage]); Click(Root.Q<Button>("enemy-target"));
+            yield return Wait(() => view.CombatPhase == "Impact", "Lethal card reaches impact");
+            Check(enemy.Health <= 0, "Lethal fixture uses the unchanged card damage calculation");
+            yield return Wait(() => !view.CombatSequenceRunning, "Lethal sequence completes its two-second delay and death animation");
+            Check(!enemyRenderer.enabled && death.gameObject.activeSelf &&
+                death.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f,
+                "An actually defeated Wrag retains the final authored death pose");
+            Click(Cards[damage]); Click(Root.Q<Button>("enemy-target"));
+            Check(!view.CombatSequenceRunning, "A defeated Wrag cannot start another battle sequence");
+        }
+        finally
+        {
+            if (view != null) { SetField("impactVfxPrefab", prefab); view.enabled = true; }
+            Time.captureFramerate = priorCapture; Application.runInBackground = priorBackground;
+            running = false; completed = true;
+        }
+    }
+
+    static IEnumerator FullSequence(int index, bool selfCard)
+    {
+        int health = enemy.Health, armor = player.Armor, turn = handler.curentTurnIndex;
+        Vector3 heroPosition = hero.transform.position, enemyPosition = enemyRenderer.transform.position;
+        int count = UnityEngine.SceneManagement.SceneManager.GetActiveScene().rootCount;
+        Click(Cards[index]); yield return null;
+        var selected = player.SelectedCard;
+        Click(Root.Q<Button>("enemy-target"));
+        Check(view.CombatSequenceRunning && view.CombatPhase == "Casting" && handler.CardActionInProgress,
+            "Wrag click begins exactly one casting sequence");
+        Check(hero.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("HolySpellAnim"),
+            "Voss idle is replaced by the existing HolySpellAnim state");
+        Check(enemy.Health == health, "Card damage is deferred until impact");
+        Click(Root.Q<Button>("enemy-target"));
+        UnityEngine.Object.FindObjectsByType<Card>(FindObjectsSortMode.None).First(c => c != selected).OnCardSelected();
+        Check(player.SelectedCard == selected && view.LastImpactTime == 0d, "Repeated target and card clicks cannot start another attack");
+        yield return Wait(() => view.CombatPhase == "Impact", "HolySpell release reaches direct impact");
+        if (view.CombatPhase != "Impact") yield break;
+        var effects = Effects();
+        if (!Check(effects.Length == 1, "Exactly one existing impact prefab spawns, with no launcher or travelling effect")) yield break;
+        var effect = effects[0];
+        Vector3 position = effect.transform.position;
+        Check((position - view.LastImpactPosition).sqrMagnitude < 0.000001f, "Impact spawns at Wrag's computed hit position");
+        var point = hero.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime;
+        Check(point >= 20f / 36f && point < 20f / 36f + 0.03f, "Impact is synchronized to HolySpell frame 20");
+        if (selfCard) Check(enemy.Health == health && player.Armor > armor, "Self armor card retains its legal effect instead of damaging Wrag");
+        else Check(enemy.Health == health - Mathf.RoundToInt(selected.cardData.skill.cardAction.value * 0.35f),
+            "Existing damage calculation applies exactly once");
+        yield return null;
+        Check(effect.GetComponentsInChildren<ParticleSystem>(true).Any(p => p.particleCount > 0), "Impact particles visibly emit on Wrag");
+        ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonDoomBattle/impact.png"));
+        bool stayedAtTarget = true, noEarlyDeath = true;
+        while (view.CombatSequenceRunning && view.CombatPhase == "Impact")
+        {
+            stayedAtTarget &= effect != null && (effect.transform.position - position).sqrMagnitude < 0.000001f;
+            if (Time.timeAsDouble < view.LastImpactTime + 2d) noEarlyDeath &= view.LastDeathTime == 0d && !death.gameObject.activeSelf;
+            yield return null;
+        }
+        Check(stayedAtTarget, "Impact root stays on Wrag; nothing travels from Voss");
+        Check(noEarlyDeath && view.CombatPhase == "Death", "Death never starts before the two-second deadline");
+        double delay = view.LastDeathTime - view.LastImpactTime;
+        Check(delay >= 2d - 0.000001d && delay <= 2d + Time.deltaTime + 0.00001d, "Death begins two seconds after impact within one rendered frame");
+        timings.Add(new { card = selected.cardData.name, impact = view.LastImpactTime, death = view.LastDeathTime, delaySeconds = delay });
+        Check(death.gameObject.activeSelf && !enemyRenderer.enabled && enemy.gameObject.activeInHierarchy,
+            "Existing Death_Warg pose plays while the bot actor remains active");
+        Check(death.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).IsName("DeathWragAnim"),
+            "Existing Death_Warg Animator is in its authored DeathWragAnim state");
+        yield return Wait(() => death.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.5f,
+            "Death animation visibly advances to its middle frames");
+        ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonDoomBattle/death.png"));
+        yield return Wait(() => !view.CombatSequenceRunning, "Death animation finishes and sequence releases controls");
+        yield return null;
+        Check(player.SelectedCard == null && !handler.CardActionInProgress && Effects().Length == 0,
+            "Completion clears selection, unlocks actions and removes impact particles");
+        Check(hero.transform.position == heroPosition && enemyRenderer.transform.position == enemyPosition &&
+            UnityEngine.SceneManagement.SceneManager.GetActiveScene().rootCount == count,
+            "Existing character transforms and scene object count are preserved");
+        Check(handler.curentTurnIndex == turn && player.CurrentHand.Count == 6, "Existing turn and hand flow are preserved");
+        Check(enemyRenderer.enabled && !death.gameObject.activeSelf, "A surviving bot returns to its original idle visibility");
+        if (selfCard) player.AddArmor(armor - player.Armor);
+        else enemy.AddHealth(health - enemy.Health);
+        view.RefreshHand();
+    }
+}

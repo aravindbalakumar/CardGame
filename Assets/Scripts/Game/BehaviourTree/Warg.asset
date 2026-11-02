@@ -2334,7 +2334,8 @@ MonoBehaviour:
         m_IsFloating: 0
         m_NodeModel:
           rid: 2586790916268753332
-        m_Connections: []
+        m_Connections:
+        - rid: 2586790926173077614
     - rid: 2586790916268753338
       type: {class: PortModel, ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
       data:
@@ -2544,6 +2545,7 @@ MonoBehaviour:
         - rid: 2586790834888770318
         - rid: 2586790832053420410
         - rid: 2586790832053420394
+        - rid: 2586790916268753337
     - rid: 2586790926173077615
       type: {class: PortModel, ns: Unity.Behavior.GraphFramework, asm: Unity.Behavior.GraphFramework}
       data:
@@ -3124,6 +3126,7 @@ MonoBehaviour:
           rid: 3911840296404517243
         m_Children:
         - rid: 3911840296404517253
+        - rid: 3911840296404517265
         m_RegisteredObservers: []
         m_Conditions:
         - rid: 3911840296404517254
@@ -3131,7 +3134,7 @@ MonoBehaviour:
         True:
           rid: 3911840296404517253
         False:
-          rid: -2
+          rid: 3911840296404517265
         m_CurrentChild:
           rid: -2
         m_ObserverType: 0
@@ -3432,6 +3435,7 @@ MonoBehaviour:
         - rid: 3911840296404517270
         - rid: 3911840296404517272
         - rid: 3911840296404517262
+        - rid: 3911840296404517244
         m_Child:
           rid: 3911840296404517277
     - rid: 3911840296404517266

@@ -1,0 +1,31 @@
+{
+    "status":  "success",
+    "result":  {
+                   "success":  true,
+                   "checks":  [
+                                  "Verification is running in Play Mode",
+                                  "Player and bot completed base actor initialization",
+                                  "Exactly six existing hand entries initialized",
+                                  "Exactly six Canvas card objects spawned without duplicates",
+                                  "Exactly the two active actors are subscribed to actor-click events",
+                                  "Existing card callback selects its own card",
+                                  "Both physics raycasters receive the selected card targeting mask",
+                                  "EventSystem physics raycast reaches Wrag\u0027s existing 3D collider",
+                                  "Existing pointer handler applies selected damage to the opponent",
+                                  "Explicit null selection clears the card without an exception",
+                                  "Deselect restores both authored event masks",
+                                  "Clicking the same card toggles selection off",
+                                  "Player\u0027s existing one-turn healing status processes correctly",
+                                  "Bot\u0027s base status collection is initialized and usable",
+                                  "Bot StartTurn writes a boolean true to its blackboard",
+                                  "Idle_Warg has a valid runtime animation controller and clips",
+                                  "Idle_Warg animation advances",
+                                  "Voss_Player has a valid runtime animation controller and clips",
+                                  "Voss_Player animation advances",
+                                  "Unbound legacy overhead UI cleanup is safe: Player Status",
+                                  "Unbound legacy overhead UI cleanup is safe: Player Status",
+                                  "Unbound legacy overhead UI cleanup is safe: Player Status"
+                              ],
+                   "error":  null
+               }
+}

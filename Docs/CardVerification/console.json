@@ -1,0 +1,46 @@
+﻿{
+    "baselineSequence":  45655,
+    "errors":  0,
+    "logs":  [
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS DESELECTED",
+                     "lastSeq":  45663
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS DESELECTED",
+                     "lastSeq":  45662
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS SELECTED",
+                     "lastSeq":  45661
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS DESELECTED",
+                     "lastSeq":  45660
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS SELECTED",
+                     "lastSeq":  45659
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS DESELECTED",
+                     "lastSeq":  45658
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS SELECTED",
+                     "lastSeq":  45657
+                 },
+                 {
+                     "type":  "Log",
+                     "messageFirstLine":  "CARD IS SELECTED",
+                     "lastSeq":  45656
+                 }
+             ]
+}

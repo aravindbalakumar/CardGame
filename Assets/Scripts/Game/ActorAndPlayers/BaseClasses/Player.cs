@@ -5,18 +5,18 @@ namespace Game.ActorAndPlayers
     using Game.DataStructures;
     using System.Collections.Generic;
     using UnityEngine;
+    using UnityEngine.Serialization;
     using System.Linq;
     [System.Serializable]
     public class Player : AbstractActor
     {
-        List<CardTypeScriptableObject> loadout;
+        protected List<CardTypeScriptableObject> loadout;
         public List<CardTypeScriptableObject> currentHand;
 
         int loadOutIndex = 0, maxLimit = 0;
-        public Collider collider;
+        [FormerlySerializedAs("_collider")] public Collider collider;
         public  override void Initialize()
         {
-            this.loadout = loadout;
             base.Initialize();
             // playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (collider.bounds.max.y + 1.15f)));
         }

@@ -1,0 +1,16 @@
+﻿{
+    "baselineSeq":  45743,
+    "endSeq":  45754,
+    "errorRecordsAfterBaseline":  [
+
+                                  ],
+    "warningsAfterBaseline":  [
+                                  {
+                                      "lastSeq":  45746,
+                                      "message":  "134 node options failed to load and were skipped.",
+                                      "note":  "Pre-existing Visual Scripting node-cache warning; unrelated to VFX."
+                                  }
+                              ],
+    "managedHistoryCorruptRows":  0,
+    "durabilityIssue":  false
+}

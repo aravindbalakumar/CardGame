@@ -1,0 +1,188 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using CrimsonDoom.UI;
+using Game;
+using Game.ActorAndPlayers;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnitySkills;
+
+// Temporary inspection/comparison tooling; never changes a prefab or enters Play Mode.
+public static class CrimsonImpactVerification
+{
+    const string PrefabPath = "Assets/Eric VFX Studio/Free Game VFX/Prefab/FX_Purple_Hit_02.prefab";
+    static readonly List<string> passed = new List<string>(), failed = new List<string>();
+    static readonly List<object> samples = new List<object>();
+    static GameViewUIToolkit view;
+    static bool completed, held, resumeRequested, oldBackground, openedSceneView;
+    static float oldScale, oldTimeScale;
+    static int oldCapture;
+    static string phase = "Idle";
+    static Vector3 scenePivot;
+    static Quaternion sceneRotation;
+    static float sceneSize;
+    static bool sceneOrtho, scene2D;
+    static SceneView sceneView;
+    static float[] Vec(Vector3 v) => new[] { v.x, v.y, v.z };
+    static T Field<T>(string name) => (T)typeof(GameViewUIToolkit).GetField(name, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(view);
+    static void SetScale(float value) => typeof(GameViewUIToolkit).GetField("impactVfxScale", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(view, value);
+    static bool Check(bool condition, string name) { (condition ? passed : failed).Add(name); return condition; }
+
+    [UnitySkill("crimson_impact_audit", "Inspect all particle modules and child transforms on the existing impact prefab without changing it.",
+        Operation = SkillOperation.Query, Mode = SkillMode.SemiAuto, Outputs = new[] { "prefab", "rootScale", "rootRotation", "systems" })]
+    public static object Audit()
+    {
+        var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+        return new { prefab = PrefabPath, rootScale = Vec(prefab.transform.localScale), rootRotation = Vec(prefab.transform.eulerAngles),
+            systems = prefab.GetComponentsInChildren<ParticleSystem>(true).Select(p => new {
+                name = p.name, parent = p.transform.parent != null ? p.transform.parent.name : null,
+                localPosition = Vec(p.transform.localPosition), localScale = Vec(p.transform.localScale),
+                scalingMode = p.main.scalingMode.ToString(), simulationSpace = p.main.simulationSpace.ToString(),
+                duration = p.main.duration, loop = p.main.loop, unscaled = p.main.useUnscaledTime,
+                startSize = p.main.startSize.constantMax, sizeMultiplier = p.main.startSizeMultiplier,
+                lifetime = p.main.startLifetime.constantMax, speed = p.main.startSpeed.constantMax,
+                shapeEnabled = p.shape.enabled, shapeType = p.shape.shapeType.ToString(), shapeScale = Vec(p.shape.scale),
+                shapeRadius = p.shape.radius, renderMode = p.GetComponent<ParticleSystemRenderer>().renderMode.ToString()
+            }).ToArray() };
+    }
+
+    [UnitySkill("crimson_impact_compare_start", "Trigger existing card attacks at scales 0.55 and 1.35 in an already running Play session; hold each impact for screenshots.",
+        Operation = SkillOperation.Execute, MutatesScene = true, RiskLevel = "medium", Outputs = new[] { "started" })]
+    public static object Start()
+    {
+        if (!Application.isPlaying) return new { started = false };
+        view = UnityEngine.Object.FindFirstObjectByType<GameViewUIToolkit>();
+        passed.Clear(); failed.Clear(); samples.Clear(); completed = held = resumeRequested = false;
+        oldScale = Field<float>("impactVfxScale"); oldTimeScale = Time.timeScale;
+        oldCapture = Time.captureFramerate; oldBackground = Application.runInBackground;
+        Application.runInBackground = true; Time.captureFramerate = 60; Time.timeScale = 1f;
+        sceneView = SceneView.lastActiveSceneView;
+        openedSceneView = sceneView == null;
+        if (openedSceneView) sceneView = EditorWindow.GetWindow<SceneView>();
+        if (sceneView != null)
+        {
+            scenePivot = sceneView.pivot; sceneRotation = sceneView.rotation; sceneSize = sceneView.size;
+            sceneOrtho = sceneView.orthographic; scene2D = sceneView.in2DMode;
+        }
+        view.StartCoroutine(Run());
+        return new { started = true };
+    }
+
+    [UnitySkill("crimson_impact_compare_resume", "Resume a held impact comparison in the existing Play session.",
+        Operation = SkillOperation.Execute, MutatesScene = true, Outputs = new[] { "resumed" })]
+    public static object Resume() { resumeRequested = true; return new { resumed = true }; }
+
+    [UnitySkill("crimson_impact_compare_status", "Read comparison results and screenshot hold state.",
+        Operation = SkillOperation.Query, Mode = SkillMode.SemiAuto,
+        Outputs = new[] { "completed", "held", "phase", "success", "passed", "failed", "samples" })]
+    public static object Status() => new { completed, held, phase, success = completed && failed.Count == 0,
+        passed = passed.ToArray(), failed = failed.ToArray(), samples = samples.ToArray() };
+
+    static IEnumerator Wait(Func<bool> condition, string name, double timeout = 20d)
+    {
+        double until = Time.realtimeSinceStartupAsDouble + timeout;
+        while (!condition() && Time.realtimeSinceStartupAsDouble < until) yield return null;
+        Check(condition(), name);
+    }
+    static void Click(Button button)
+    {
+        var m = typeof(Clickable).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .First(p => p.Name == "SimulateSingleClick");
+        m.Invoke(button.clickable, m.GetParameters().Select(p => p.ParameterType == typeof(int) ? (object)0 : null).ToArray());
+    }
+
+    static IEnumerator Run()
+    {
+        try
+        {
+            var player = GameHandler.instance.player;
+            var enemy = Field<AbstractActor>("opponent");
+            var hero = Field<SpriteRenderer>("heroRenderer");
+            var enemyRenderer = Field<SpriteRenderer>("enemyRenderer");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);
+            var authored = prefab.GetComponentsInChildren<ParticleSystem>(true);
+            yield return Wait(() => player.intialized && player.CurrentHand.Count == 5, "Five-card gameplay hand initializes");
+            int index = player.CurrentHand.FindIndex(c => c.skill.targetGroup.Contains(enemy.gameObject.layer));
+            Vector3 heroPosition = hero.transform.position, enemyPosition = enemy.transform.position;
+            foreach (float scale in new[] { 0.55f, 1.35f })
+            {
+                SetScale(scale); view.RefreshHand();
+                int health = enemy.Health, turn = GameHandler.instance.curentTurnIndex;
+                var root = view.GetComponent<UIDocument>().rootVisualElement;
+                Click(root.Q("hand").Query<Button>().ToList()[index]); Click(root.Q<Button>("enemy-target"));
+                yield return Wait(() => view.CombatPhase == "Impact", "Attack reaches impact at scale " + scale);
+                var effect = Field<GameObject>("impactEffect");
+                if (!Check(effect != null, "Existing impact prefab spawns at scale " + scale)) yield break;
+                var systems = effect.GetComponentsInChildren<ParticleSystem>(true);
+                Check(systems.Length == 9 && systems.All(p => p.main.scalingMode == ParticleSystemScalingMode.Hierarchy),
+                    "All nine child systems use uniform Hierarchy scaling at " + scale);
+                Check(systems.Select((p, i) => p.main.duration == authored[i].main.duration &&
+                    p.main.startLifetime.constantMax == authored[i].main.startLifetime.constantMax &&
+                    p.main.startSize.constantMax == authored[i].main.startSize.constantMax && p.shape.scale == authored[i].shape.scale).All(v => v),
+                    "Authored particle duration, lifetime, Start Size and Shape remain unchanged at " + scale);
+                Check((effect.transform.position - view.LastImpactPosition).sqrMagnitude < 0.000001f,
+                    "Effect is centered at the actual Wrag hit point at " + scale);
+                Check(Quaternion.Angle(effect.transform.rotation, prefab.transform.rotation) < 0.001f,
+                    "Authored impact orientation is preserved at " + scale);
+                Check(Mathf.Abs(effect.transform.localScale.x - prefab.transform.localScale.x * scale) < 0.00001f,
+                    "Only the spawned instance scale changes at " + scale);
+                float release = hero.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime;
+                Check(release >= 20f / 36f && release < 20f / 36f + 0.03f,
+                    "HolySpell frame-20 synchronization is preserved at " + scale);
+                // Match particle age and random seed for a reproducible visual size comparison.
+                foreach (var p in systems) { p.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear); p.useAutoRandomSeed = false; }
+                for (int i = 0; i < systems.Length; i++) { systems[i].randomSeed = (uint)(101 + i); systems[i].Simulate(0.12f, false, true, true); systems[i].Pause(false); }
+                Time.timeScale = 0f;
+                phase = scale < 1f ? "before" : "after";
+                if (sceneView != null)
+                {
+                    sceneView.in2DMode = true;
+                    sceneView.LookAt(enemyRenderer.bounds.center, Camera.main.transform.rotation, Camera.main.orthographicSize, true, true);
+                    sceneView.Repaint();
+                }
+                Bounds bounds = new Bounds(effect.transform.position, Vector3.zero);
+                foreach (var p in systems.Where(p => p.particleCount > 0)) bounds.Encapsulate(p.GetComponent<ParticleSystemRenderer>().bounds);
+                var lo = Camera.main.WorldToViewportPoint(bounds.min); var hi = Camera.main.WorldToViewportPoint(bounds.max);
+                samples.Add(new { scale, worldBounds = Vec(bounds.size), position = Vec(effect.transform.position),
+                    viewportMin = Vec(lo), viewportMax = Vec(hi), emissionCount = systems.Sum(p => p.particleCount),
+                    offscreen = lo.x < 0 || lo.y < 0 || hi.x > 1 || hi.y > 1 });
+                Check(systems.Sum(p => p.particleCount) > 0, "Particles visibly emit at " + scale);
+                ScreenCapture.CaptureScreenshot(Path.GetFullPath("Temp/CrimsonDoomImpact/" + phase + "-game.png"));
+                held = true; resumeRequested = false;
+                yield return Wait(() => resumeRequested, "Screenshots captured for " + phase, 180d);
+                held = false; Time.timeScale = 1f;
+                foreach (var p in systems) p.Play(false);
+                Vector3 impactPosition = effect.transform.position;
+                yield return Wait(() => view.CombatPhase == "Death", "Death follows impact at " + scale);
+                Check(Math.Abs(view.LastDeathTime - view.LastImpactTime - 2d) <= Time.deltaTime + 0.00001d,
+                    "Existing two-second death delay is unchanged at " + scale);
+                Check(effect != null && effect.transform.position == impactPosition,
+                    "Effect remains on Wrag without a travelling path at " + scale);
+                yield return Wait(() => !view.CombatSequenceRunning, "Sequence completes naturally at " + scale);
+                yield return null;
+                Check(Field<GameObject>("impactEffect") == null && player.SelectedCard == null && !GameHandler.instance.CardActionInProgress,
+                    "Particles and selection are cleaned up at " + scale);
+                Check(player.CurrentHand.Count == 5 && GameHandler.instance.curentTurnIndex == turn &&
+                    hero.transform.position == heroPosition && enemy.transform.position == enemyPosition,
+                    "Cards, turn flow and character transforms remain unchanged at " + scale);
+                enemy.AddHealth(health - enemy.Health);
+            }
+        }
+        finally
+        {
+            SetScale(oldScale); Time.timeScale = oldTimeScale; Time.captureFramerate = oldCapture;
+            Application.runInBackground = oldBackground;
+            if (sceneView != null)
+            {
+                if (openedSceneView) sceneView.Close();
+                else { sceneView.in2DMode = scene2D; sceneView.LookAt(scenePivot, sceneRotation, sceneSize, sceneOrtho, true); }
+            }
+            held = false; completed = true; phase = "Finished";
+        }
+    }
+}

@@ -1,0 +1,28 @@
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Animations;
+using UnitySkills;
+
+// Temporary Editor operation, removed after saving and verifying the controller.
+public static class CrimsonVossSpeedAdjustment
+{
+    [UnitySkill("crimson_voss_speed_apply", "Set only Voss's idle state speed to 1 and his three action state speeds to 1.5, preserving clips and transitions.",
+        Operation = SkillOperation.Modify, MutatesAssets = true, RiskLevel = "medium", Outputs = new[] { "controller", "states" })]
+    public static object Apply()
+    {
+        const string path = "Assets/Animation/Voss.controller";
+        var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
+        var states = controller.layers[0].stateMachine.states.Select(s => s.state).ToArray();
+        if (states.Length != 4 || !states.Any(s => s.name == "idle"))
+            return new { error = "Expected existing four-state Voss controller; no assets changed." };
+        Undo.RecordObjects(states, "Speed up Voss animations");
+        foreach (var state in states)
+        {
+            state.speed = state.name == "idle" ? 1f : 1.5f;
+            EditorUtility.SetDirty(state);
+        }
+        EditorUtility.SetDirty(controller);
+        AssetDatabase.SaveAssetIfDirty(controller);
+        return new { controller = path, states = states.Select(s => new { name = s.name, speed = s.speed }).ToArray() };
+    }
+}

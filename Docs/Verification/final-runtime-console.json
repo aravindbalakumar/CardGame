@@ -1,0 +1,48 @@
+{
+  "baselineSequence": 45341,
+  "newErrorGroups": 0,
+  "newLogs": [
+    {
+      "type": "Warning",
+      "messageFirstLine": "134 node options failed to load and were skipped.",
+      "count": 6,
+      "lastSeq": 45345
+    },
+    {
+      "type": "Log",
+      "messageFirstLine": "[UnitySkills] REST Server started at http://localhost:8090/ \u00b7 839 skills \u00b7 CardGame_D6BF9C4E",
+      "count": 7,
+      "lastSeq": 45344
+    },
+    {
+      "type": "Warning",
+      "messageFirstLine": "Serialized file \"Assets/Plugins/Demigiant/DOTween/DOTween.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade.",
+      "count": 13,
+      "lastSeq": 45343
+    },
+    {
+      "type": "Warning",
+      "messageFirstLine": "Serialized file \"Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade.",
+      "count": 13,
+      "lastSeq": 45342
+    }
+  ],
+  "coverage": {
+    "oldestSeq": 5911,
+    "newestSeq": 45345,
+    "snapshotSeq": 45345,
+    "retained": 39435,
+    "capacity": 50000,
+    "maxBytes": 67108864,
+    "unknownTimeCount": 14,
+    "nativeTime": "unknown",
+    "nativeMessageMayBeTruncated": true,
+    "fullTextGuaranteedFor": "managed",
+    "corruptRows": 0,
+    "durabilityIssue": false,
+    "editorLogPath": "D:/Projects/UnityProjects/CrimsonDoomGame/CardGame/Logs/Editor.log",
+    "editorLogAvailable": true,
+    "editorLogSource": "Editor.log is an external fallback; it is not imported into cursor history."
+  },
+  "rawEvidence": "Temp/CrimsonDoomStability/console-after-final-smoke.json"
+}

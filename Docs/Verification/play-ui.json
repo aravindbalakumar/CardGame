@@ -1,0 +1,20 @@
+{
+    "status":  "success",
+    "result":  {
+                   "success":  true,
+                   "checks":  [
+                                  "Verification is running in Play Mode",
+                                  "Player and bot completed base actor initialization",
+                                  "Exactly six existing hand entries initialized",
+                                  "Exactly six Canvas card objects spawned without duplicates",
+                                  "Exactly the two active actors are subscribed to actor-click events",
+                                  "Existing bot branch reaches its turn-reset node across real player frames",
+                                  "Live UI Toolkit hand builds all six cards",
+                                  "Live UI Toolkit health reflects the existing player",
+                                  "UI disable removes its player-status callback",
+                                  "UI re-enable restores exactly one player-status callback",
+                                  "Original UI object visibility restored"
+                              ],
+                   "error":  null
+               }
+}

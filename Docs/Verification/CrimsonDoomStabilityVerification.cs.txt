@@ -1,0 +1,156 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Game;
+using Game.ActorAndPlayers;
+using Game.DataStructures;
+using Unity.Behavior;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UIElements;
+using UnitySkills;
+
+// Temporary verification tooling. It never enters Play Mode or saves runtime mutations.
+public static class CrimsonDoomStabilityVerification
+{
+    static readonly List<string> checks = new List<string>();
+    static GameObject ui;
+    static bool uiWasActive;
+    static bool documentWasEnabled, viewWasEnabled;
+
+    static void RestoreUI()
+    {
+        if (ui == null) return;
+        ui.GetComponent<CrimsonDoom.UI.GameViewUIToolkit>().enabled = viewWasEnabled;
+        ui.GetComponent<UIDocument>().enabled = documentWasEnabled;
+        ui.SetActive(uiWasActive);
+    }
+
+    static void Check(bool value, string description)
+    {
+        if (!value) throw new InvalidOperationException(description);
+        checks.Add(description);
+    }
+
+    [UnitySkill("crimson_stability_verify", "Verify the existing gameplay in an already running Play session; phase core, ui, or restore.",
+        Operation = SkillOperation.Execute, MutatesScene = true,
+        Outputs = new[] { "success", "checks", "error" }, RiskLevel = "medium")]
+    public static object Verify(string phase = "core")
+    {
+        checks.Clear();
+        try
+        {
+            Check(Application.isPlaying, "Verification is running in Play Mode");
+            var handler = GameHandler.instance;
+            var player = handler.player;
+            var bot = UnityEngine.Object.FindFirstObjectByType<BotPlayer>();
+            Check(player.intialized && bot.intialized, "Player and bot completed base actor initialization");
+            Check(player.CurrentHand.Count == 6, "Exactly six existing hand entries initialized");
+            var cards = UnityEngine.Object.FindObjectsByType<Card>(FindObjectsSortMode.None);
+            Check(cards.Length == 6, "Exactly six Canvas card objects spawned without duplicates");
+            Check(GameHandler.OnAbstractActorClicked.GetInvocationList().Length == 2,
+                "Exactly the two active actors are subscribed to actor-click events");
+
+            if (phase == "core")
+            {
+                var ray2D = handler.raycaster;
+                var ray3D = handler.mainCamera.GetComponents<PhysicsRaycaster>().Single(r => !(r is Physics2DRaycaster));
+                int original2D = ray2D.eventMask, original3D = ray3D.eventMask;
+                var card = cards.First(c => c.cardData.skill.cardAction.actionType == ActionType.Damage &&
+                    c.cardTargetGroup.Contains(bot.gameObject.layer));
+                card.OnCardSelected();
+                Check(player.SelectedCard == card, "Existing card callback selects its own card");
+                Check(ray2D.eventMask == card.cardTargetGroup && ray3D.eventMask == card.cardTargetGroup,
+                    "Both physics raycasters receive the selected card targeting mask");
+                var pointer = new PointerEventData(EventSystem.current) {
+                    position = handler.mainCamera.WorldToScreenPoint(bot.GetComponent<SpriteRenderer>().bounds.center)
+                };
+                var hits = new List<RaycastResult>();
+                EventSystem.current.RaycastAll(pointer, hits);
+                Check(hits.Any(h => h.gameObject == bot.gameObject && h.module == ray3D),
+                    "EventSystem physics raycast reaches Wrag's existing 3D collider");
+                int previousHealth = bot.Health;
+                bot.OnPointerDown(pointer);
+                Check(bot.Health < previousHealth, "Existing pointer handler applies selected damage to the opponent");
+                bot.AddHealth(previousHealth - bot.Health);
+                player.UpdateSelectedCard(null);
+                Check(player.SelectedCard == null, "Explicit null selection clears the card without an exception");
+                Check(ray2D.eventMask == original2D && ray3D.eventMask == original3D,
+                    "Deselect restores both authored event masks");
+                card.OnCardSelected();
+                card.OnCardSelected();
+                Check(player.SelectedCard == null, "Clicking the same card toggles selection off");
+                int playerHealth = player.Health;
+                player.AddHealth(-1);
+                player.ApplyStatus(StatusType.RestoreHealth, 1, 1);
+                player.OnTurnEnd();
+                Check(player.Health == playerHealth, "Player's existing one-turn healing status processes correctly");
+                bot.AddHealth(-1);
+                bot.ApplyStatus(StatusType.RestoreHealth, 1, 1);
+                bot.OnTurnEnd();
+                Check(bot.Health == previousHealth, "Bot's base status collection is initialized and usable");
+                var agent = bot.GetComponent<BehaviorGraphAgent>();
+                bot.StartTurn();
+                Check(agent.BlackboardReference.GetVariableValue<bool>("isMyTurn", out var startedTurn) && startedTurn,
+                    "Bot StartTurn writes a boolean true to its blackboard");
+                foreach (var animator in UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsSortMode.None))
+                {
+                    Check(animator.runtimeAnimatorController != null && animator.runtimeAnimatorController.animationClips.Length > 0,
+                        animator.name + " has a valid runtime animation controller and clips");
+                    var previousState = animator.GetCurrentAnimatorStateInfo(0);
+                    animator.Update(0.1f);
+                    var currentState = animator.GetCurrentAnimatorStateInfo(0);
+                    Check(currentState.fullPathHash != previousState.fullPathHash || currentState.normalizedTime != previousState.normalizedTime,
+                        animator.name + " animation advances");
+                }
+                foreach (var overhead in Resources.FindObjectsOfTypeAll<PlayerStatusOverheadUI>()
+                    .Where(o => o.gameObject.scene.IsValid()))
+                {
+                    typeof(PlayerStatusOverheadUI).GetMethod("ResetComponent", BindingFlags.NonPublic | BindingFlags.Instance)
+                        .Invoke(overhead, null);
+                    Check(true, "Unbound legacy overhead UI cleanup is safe: " + overhead.name);
+                }
+                ui = Resources.FindObjectsOfTypeAll<CrimsonDoom.UI.GameViewUIToolkit>()
+                    .Single(v => v.gameObject.scene.IsValid()).gameObject;
+                uiWasActive = ui.activeSelf;
+                documentWasEnabled = ui.GetComponent<UIDocument>().enabled;
+                viewWasEnabled = ui.GetComponent<CrimsonDoom.UI.GameViewUIToolkit>().enabled;
+                ui.GetComponent<UIDocument>().enabled = true;
+                ui.GetComponent<CrimsonDoom.UI.GameViewUIToolkit>().enabled = true;
+                ui.SetActive(true);
+            }
+            else if (phase == "ui")
+            {
+                var agent = bot.GetComponent<BehaviorGraphAgent>();
+                Check(agent.BlackboardReference.GetVariableValue<bool>("isMyTurn", out var runningTurn) && !runningTurn,
+                    "Existing bot branch reaches its turn-reset node across real player frames");
+                var view = ui.GetComponent<CrimsonDoom.UI.GameViewUIToolkit>();
+                view.RefreshHand();
+                var root = ui.GetComponent<UIDocument>().rootVisualElement;
+                Check(root.Q("hand").Query<Button>().ToList().Count == 6,
+                    "Live UI Toolkit hand builds all six cards");
+                Check(root.Q<Label>("header-health").text == player.Health + "/" + player.MaxHealth,
+                    "Live UI Toolkit health reflects the existing player");
+                int subscribers = player.OnPlayerUIUpdate?.GetInvocationList().Length ?? 0;
+                ui.SetActive(false);
+                Check((player.OnPlayerUIUpdate?.GetInvocationList().Length ?? 0) == subscribers - 1,
+                    "UI disable removes its player-status callback");
+                ui.SetActive(true);
+                Check((player.OnPlayerUIUpdate?.GetInvocationList().Length ?? 0) == subscribers,
+                    "UI re-enable restores exactly one player-status callback");
+                view.RefreshHand();
+                RestoreUI();
+                Check(ui.activeSelf == uiWasActive, "Original UI object visibility restored");
+            }
+            else if (phase == "restore") RestoreUI();
+            return new { success = true, checks = checks.ToArray(), error = (string)null };
+        }
+        catch (Exception e)
+        {
+            RestoreUI();
+            return new { success = false, checks = checks.ToArray(), error = e.ToString() };
+        }
+    }
+}

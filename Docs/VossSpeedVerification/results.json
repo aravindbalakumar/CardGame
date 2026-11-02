@@ -1,0 +1,71 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "completed":  true,
+                   "phase":  "Finished",
+                   "success":  true,
+                   "passed":  [
+                                  "Existing game initializes",
+                                  "Initial five cards enabled; End Turn awaits Voss attack",
+                                  "Early End Turn click is ignored",
+                                  "normal: existing enemy damage card available",
+                                  "normal: card enters target-selection mode",
+                                  "normal: Voss animation locks End Turn",
+                                  "normal: Voss impact",
+                                  "normal: faster spell retains frame-20 impact timing",
+                                  "normal: existing HolySpell animation plays",
+                                  "normal: original card damage occurs once",
+                                  "normal: Wrag death pose",
+                                  "normal: death delay is one game-time second",
+                                  "normal: Voss sequence completes",
+                                  "normal: End Turn enabled after Voss finishes and surviving Wrag restored",
+                                  "normal: End Turn advances existing manager to Wrag",
+                                  "normal: existing hierarchy bite animation plays",
+                                  "normal: all player interactions lock during counterattack",
+                                  "normal: repeated clicks cannot duplicate or skip the attack",
+                                  "normal: pause freezes windup and damage",
+                                  "normal: Wrag reaches impact",
+                                  "normal: Voss_Hurt starts on the impact frame",
+                                  "normal: hit synchronized to bite frame 21",
+                                  "normal: enlarged existing impact spawns directly on hurt Voss",
+                                  "normal: configured skill applies existing damage once at impact",
+                                  "normal: duplicate UseSkill is rejected in the same turn",
+                                  "normal: particles emit on Voss without travelling",
+                                  "normal: counterattack completes",
+                                  "normal: visuals, VFX and input lock clean up",
+                                  "normal: one hit and one complete turn round-trip",
+                                  "normal: player control returns with five cards; next attack re-arms End Turn",
+                                  "normal: card selection works after counterattack"
+                              ],
+                   "failed":  [
+
+                              ],
+                   "measurements":  [
+                                        {
+                                            "label":  "normal",
+                                            "secondsToImpact":  1.1166666666666671
+                                        },
+                                        {
+                                            "label":  "normal",
+                                            "impactToDeathSeconds":  1.0
+                                        },
+                                        {
+                                            "label":  "normal",
+                                            "attackNormalizedTime":  0.5833342,
+                                            "hurtNormalizedTime":  0.0,
+                                            "hitPosition":  [
+                                                                -3.93,
+                                                                0.254239917,
+                                                                0.200024411
+                                                            ],
+                                            "healthBefore":  50,
+                                            "healthAfter":  48,
+                                            "damage":  2
+                                        }
+                                    ],
+                   "turns":  [
+                                 "Idle_Warg",
+                                 "Voss_Player"
+                             ]
+               }
+}

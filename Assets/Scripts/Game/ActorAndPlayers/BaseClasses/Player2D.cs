@@ -41,20 +41,17 @@ namespace Game.ActorAndPlayers
             // playerOverUI.LoadStausUI(this, worldCamera, new Vector3(this.transform.position.x, (collider.bounds.max.y + 1.15f)));
         }
 
-        public void OnDestroy()
-        {
-            // GameHandler.instance.inputHandler.OnRaycastHit.RemoveListener( OnRaycastHit);
-        }
-
         public void OnRaycastHit(GameObject hitObject)
         {
+            if (hitObject == null || selectedCard == null) return;
             AbstractActor abstractActor = hitObject.GetComponent<AbstractActor>();
             if (abstractActor == null)
             {
                 return;
             }
 
-            GameHandler.instance.ProcessCardAction(this,selectedCard.cardData);
+            if (selectedCard.cardTargetGroup.Contains(abstractActor.gameObject.layer))
+                GameHandler.OnAbstractActorClickedWithCard?.Invoke(abstractActor, selectedCard.cardData);
         }
 
         public void InitializeCards()
@@ -76,12 +73,12 @@ namespace Game.ActorAndPlayers
             {
                 if(GameHandler.instance.player.SelectedCard.cardTargetGroup.Contains(this.gameObject.layer))
                 {
-                GameHandler.OnAbstractActorClickedWithCard.Invoke(this,GameHandler.instance.player.SelectedCard.cardData);
+                GameHandler.OnAbstractActorClickedWithCard?.Invoke(this,GameHandler.instance.player.SelectedCard.cardData);
                 }
             }
             else
             {
-                GameHandler.OnAbstractActorClicked.Invoke(this);
+                GameHandler.OnAbstractActorClicked?.Invoke(this);
             }
         }
 
@@ -94,6 +91,7 @@ namespace Game.ActorAndPlayers
         public override void UpdateVisualSystem(LayerMask? mask)
         {
             base.UpdateVisualSystem(mask);
+            if (outline == null) return;
             if (mask.HasValue)
             {
                 if (mask.Value.Contains(this.gameObject))
@@ -113,6 +111,7 @@ namespace Game.ActorAndPlayers
 
         public void UpdateSelectedCard(Card selectedCard)
         {
+            if (selectedCard != null && GameHandler.instance.CardActionInProgress) return;
             if (this.selectedCard != null)
             {
                 this.selectedCard.DeselectCard();
@@ -126,7 +125,8 @@ namespace Game.ActorAndPlayers
             else
             {
                 this.selectedCard = selectedCard;
-                GameHandler.instance.EnterTargettingMode(selectedCard.cardTargetGroup);
+                if (selectedCard != null)
+                    GameHandler.instance.EnterTargettingMode(selectedCard.cardTargetGroup);
                 // GameHandler.instance.inputHandler.shouldTrackInput = true;
             }
         }

@@ -1,0 +1,47 @@
+﻿{
+    "baselineSequence":  45567,
+    "newErrorGroups":  0,
+    "newLogs":  [
+                    {
+                        "type":  "Warning",
+                        "messageFirstLine":  "134 node options failed to load and were skipped.\r",
+                        "count":  13,
+                        "lastSeq":  45571
+                    },
+                    {
+                        "type":  "Log",
+                        "messageFirstLine":  "[UnitySkills] REST Server started at http://localhost:8090/ · 839 skills · CardGame_D6BF9C4E",
+                        "count":  12,
+                        "lastSeq":  45570
+                    },
+                    {
+                        "type":  "Warning",
+                        "messageFirstLine":  "Serialized file \"Assets/Plugins/Demigiant/DOTween/DOTween.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade.",
+                        "count":  26,
+                        "lastSeq":  45569
+                    },
+                    {
+                        "type":  "Warning",
+                        "messageFirstLine":  "Serialized file \"Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll.meta\" contains a PluginImporter object at version 1, below the supported minimum (2). Open and re-save the file to upgrade.",
+                        "count":  26,
+                        "lastSeq":  45568
+                    }
+                ],
+    "coverage":  {
+                     "oldestSeq":  6822,
+                     "newestSeq":  45571,
+                     "snapshotSeq":  45571,
+                     "retained":  38750,
+                     "capacity":  50000,
+                     "maxBytes":  67108864,
+                     "unknownTimeCount":  26,
+                     "nativeTime":  "unknown",
+                     "nativeMessageMayBeTruncated":  true,
+                     "fullTextGuaranteedFor":  "managed",
+                     "corruptRows":  0,
+                     "durabilityIssue":  false,
+                     "editorLogPath":  "D:/Projects/UnityProjects/CrimsonDoomGame/CardGame/Logs/Editor.log",
+                     "editorLogAvailable":  true,
+                     "editorLogSource":  "Editor.log is an external fallback; it is not imported into cursor history."
+                 }
+}

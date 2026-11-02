@@ -20,12 +20,13 @@ public partial class CastSkillOfTypeAction : Action
 
     protected override Status OnStart()
     {
-        if (bot.Value == null || Skill.Value == SkillType.None || Target.Value==null)
+        skillToCast = null;
+        skillIndex = -1;
+        if (bot?.Value == null || Skill == null || Skill.Value == SkillType.None || Target?.Value == null)
         {
-            return Status.Uninitialized;
+            return Status.Failure;
         }
 
-        int skillIndex=-1;
         switch (Skill.Value)
         {
             case SkillType.Attack:

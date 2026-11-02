@@ -44,12 +44,16 @@ namespace Game
         public void InitializeCard(CardTypeScriptableObject cardBehaviourAndData)
         {
             this.cardBehaviourAndData = cardBehaviourAndData;
-            cardIcon.overrideSprite = Sprite.Create(this.cardBehaviourAndData.metaData.cardTexture, new Rect(0, 0, this.cardBehaviourAndData.metaData.cardTexture.width, this.cardBehaviourAndData.metaData.cardTexture.height), Vector2.one / 2);
+            var texture = cardBehaviourAndData != null ? cardBehaviourAndData.metaData.cardTexture : null;
+            cardIcon.overrideSprite = texture != null
+                ? Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one / 2)
+                : null;
             // cardName.text = this.cardBehaviourAndData.metaData.name;
             // cardEnergy.text = this.cardBehaviourAndData.energyUsage.ToString();
         }
         public void OnCardSelected()
         {
+            if (GameHandler.instance == null || GameHandler.instance.CardActionInProgress) return;
             Debug.Log("CARD IS SELECTED");
             this.transform.localScale = Vector3.one * 1.1f;
             GameHandler.instance.player.UpdateSelectedCard(this);

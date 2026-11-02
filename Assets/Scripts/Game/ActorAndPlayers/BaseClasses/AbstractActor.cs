@@ -88,7 +88,7 @@ namespace Game.ActorAndPlayers
             }
         }
 
-        Dictionary<StatusType, Vector2Int> statusEffects;
+        readonly Dictionary<StatusType, Vector2Int> statusEffects = new Dictionary<StatusType, Vector2Int>();
       
         bool alive;
 
@@ -119,8 +119,9 @@ namespace Game.ActorAndPlayers
             GameHandler.OnTargettingModeChanged-=UpdateVisualSystem;
             GameHandler.OnAbstractActorClicked-=OnActorClicked;
         }
-        private void OnDestroy()
+        protected virtual void OnDestroy()
         {
+            OnMainSystemsClosed();
             GameHandler.OnGameSystemsInitialized -= OnMainSystemsInitialized;
             GameHandler.OnGameSystemsClosed -= OnMainSystemsClosed;
            
@@ -142,7 +143,9 @@ namespace Game.ActorAndPlayers
         }
         public virtual void Initialize()
         {
-            statusEffects = new Dictionary<StatusType, Vector2Int>();
+            statusEffects.Clear();
+            alive = Health > 0;
+            intialized = true;
              
         }
         public void TakeDamage(int incomingDamage)

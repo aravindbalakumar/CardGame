@@ -1,0 +1,306 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "prefab":  "Assets/Eric VFX Studio/Free Game VFX/Prefab/FX_Purple_Hit_02.prefab",
+                   "rootScale":  [
+                                     1.0,
+                                     1.0,
+                                     1.0
+                                 ],
+                   "rootRotation":  [
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                   "systems":  [
+                                   {
+                                       "name":  "FX_Purple_Hit_02",
+                                       "parent":  null,
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  5.0,
+                                       "loop":  true,
+                                       "unscaled":  false,
+                                       "startSize":  1.0,
+                                       "sizeMultiplier":  1.0,
+                                       "lifetime":  5.0,
+                                       "speed":  5.0,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Cone",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  1.0,
+                                       "renderMode":  "Billboard"
+                                   },
+                                   {
+                                       "name":  "Pos",
+                                       "parent":  "FX_Purple_Hit_02",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  5.0,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  1.0,
+                                       "sizeMultiplier":  1.0,
+                                       "lifetime":  5.0,
+                                       "speed":  5.0,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Cone",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  1.0,
+                                       "renderMode":  "Billboard"
+                                   },
+                                   {
+                                       "name":  "hit",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  5.0,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  1.5,
+                                       "sizeMultiplier":  1.5,
+                                       "lifetime":  0.35,
+                                       "speed":  0.01,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Sphere",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  0.0001,
+                                       "renderMode":  "Stretch"
+                                   },
+                                   {
+                                       "name":  "flare",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  0.1,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  3.5,
+                                       "sizeMultiplier":  3.5,
+                                       "lifetime":  0.2,
+                                       "speed":  0.0,
+                                       "shapeEnabled":  false,
+                                       "shapeType":  "Cone",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  1.0,
+                                       "renderMode":  "Billboard"
+                                   },
+                                   {
+                                       "name":  "Fragments",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.05,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.20000064,
+                                                          1.20000017,
+                                                          1.20000017
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  1.0,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  0.2,
+                                       "sizeMultiplier":  0.2,
+                                       "lifetime":  0.4,
+                                       "speed":  5.0,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Sphere",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  0.4,
+                                       "renderMode":  "Stretch"
+                                   },
+                                   {
+                                       "name":  "Ray",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.19999993,
+                                                          1.19999993,
+                                                          1.19999993
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  1.0,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  0.55,
+                                       "sizeMultiplier":  0.55,
+                                       "lifetime":  0.3,
+                                       "speed":  -0.01,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Hemisphere",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  0.3,
+                                       "renderMode":  "Stretch"
+                                   },
+                                   {
+                                       "name":  "sheet",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             -0.12,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.3,
+                                                          1.3,
+                                                          1.3
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  5.0,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  2.4,
+                                       "sizeMultiplier":  2.4,
+                                       "lifetime":  0.23,
+                                       "speed":  0.01,
+                                       "shapeEnabled":  true,
+                                       "shapeType":  "Sphere",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  0.0001,
+                                       "renderMode":  "Billboard"
+                                   },
+                                   {
+                                       "name":  "glow (1)",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             0.0,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  0.1,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  7.0,
+                                       "sizeMultiplier":  7.0,
+                                       "lifetime":  0.15,
+                                       "speed":  0.0,
+                                       "shapeEnabled":  false,
+                                       "shapeType":  "Cone",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  1.0,
+                                       "renderMode":  "Billboard"
+                                   },
+                                   {
+                                       "name":  "flare (1)",
+                                       "parent":  "Pos",
+                                       "localPosition":  [
+                                                             -0.09,
+                                                             0.0,
+                                                             0.0
+                                                         ],
+                                       "localScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "scalingMode":  "Hierarchy",
+                                       "simulationSpace":  "Local",
+                                       "duration":  0.1,
+                                       "loop":  false,
+                                       "unscaled":  false,
+                                       "startSize":  3.5,
+                                       "sizeMultiplier":  3.5,
+                                       "lifetime":  0.2,
+                                       "speed":  0.0,
+                                       "shapeEnabled":  false,
+                                       "shapeType":  "Cone",
+                                       "shapeScale":  [
+                                                          1.0,
+                                                          1.0,
+                                                          1.0
+                                                      ],
+                                       "shapeRadius":  1.0,
+                                       "renderMode":  "Billboard"
+                                   }
+                               ]
+               }
+}

@@ -1,0 +1,213 @@
+﻿{
+    "status":  "success",
+    "result":  {
+                   "actors":  [
+                                  {
+                                      "gameObject":  "Voss_Player",
+                                      "active":  true,
+                                      "enabled":  true,
+                                      "position":  [
+                                                       -3.93,
+                                                       -0.3601601,
+                                                       0.4000244
+                                                   ],
+                                      "scale":  [
+                                                    1.0,
+                                                    1.0,
+                                                    1.0
+                                                ],
+                                      "controller":  "Assets/Animation/Voss.controller",
+                                      "states":  [
+                                                     {
+                                                         "name":  "idle",
+                                                         "speed":  0.25,
+                                                         "transitionCount":  3
+                                                     },
+                                                     {
+                                                         "name":  "HurtVossAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  1
+                                                     },
+                                                     {
+                                                         "name":  "HolySpellAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  1
+                                                     },
+                                                     {
+                                                         "name":  "RodAttackVossAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  1
+                                                     }
+                                                 ],
+                                      "clips":  [
+                                                    {
+                                                        "name":  "Voss64Frames",
+                                                        "path":  "Assets/Animation/Voss64Frames.anim",
+                                                        "length":  5.33333349,
+                                                        "fps":  12.0,
+                                                        "loop":  true,
+                                                        "events":  0
+                                                    },
+                                                    {
+                                                        "name":  "HurtVossAnim",
+                                                        "path":  "Assets/Animation/HurtVossAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    },
+                                                    {
+                                                        "name":  "HolySpellAnim",
+                                                        "path":  "Assets/Animation/HolySpellAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    },
+                                                    {
+                                                        "name":  "RodAttackVossAnim",
+                                                        "path":  "Assets/Animation/RodAttackVossAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "gameObject":  "Idle_Warg",
+                                      "active":  true,
+                                      "enabled":  true,
+                                      "position":  [
+                                                       4.47,
+                                                       -0.36,
+                                                       0.0
+                                                   ],
+                                      "scale":  [
+                                                    1.0,
+                                                    1.0,
+                                                    1.0
+                                                ],
+                                      "controller":  "Assets/Sprites/28102026/Wrag/Idle_Warg/frame_000_0.controller",
+                                      "states":  [
+                                                     {
+                                                         "name":  "IdleWragAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  0
+                                                     }
+                                                 ],
+                                      "clips":  [
+                                                    {
+                                                        "name":  "IdleWragAnim",
+                                                        "path":  "Assets/Sprites/28102026/Wrag/Idle_Warg/IdleWragAnim.anim",
+                                                        "length":  5.33333349,
+                                                        "fps":  12.0,
+                                                        "loop":  true,
+                                                        "events":  0
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "gameObject":  "Biting_Wrag",
+                                      "active":  false,
+                                      "enabled":  true,
+                                      "position":  [
+                                                       4.47,
+                                                       -0.36,
+                                                       0.0
+                                                   ],
+                                      "scale":  [
+                                                    1.0,
+                                                    1.0,
+                                                    1.0
+                                                ],
+                                      "controller":  "Assets/Sprites/28102026/Wrag/Biting_Wrag/frame_000_0.controller",
+                                      "states":  [
+                                                     {
+                                                         "name":  "BitingWragAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  0
+                                                     }
+                                                 ],
+                                      "clips":  [
+                                                    {
+                                                        "name":  "BitingWragAnim",
+                                                        "path":  "Assets/Sprites/28102026/Wrag/Biting_Wrag/BitingWragAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "gameObject":  "Death_Warg",
+                                      "active":  false,
+                                      "enabled":  true,
+                                      "position":  [
+                                                       4.47,
+                                                       -0.36,
+                                                       0.0
+                                                   ],
+                                      "scale":  [
+                                                    1.0,
+                                                    1.0,
+                                                    1.0
+                                                ],
+                                      "controller":  "Assets/Sprites/28102026/Wrag/Death_Warg/frame_000_0.controller",
+                                      "states":  [
+                                                     {
+                                                         "name":  "DeathWragAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  0
+                                                     }
+                                                 ],
+                                      "clips":  [
+                                                    {
+                                                        "name":  "DeathWragAnim",
+                                                        "path":  "Assets/Sprites/28102026/Wrag/Death_Warg/DeathWragAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "gameObject":  "Hurt_Warg",
+                                      "active":  false,
+                                      "enabled":  true,
+                                      "position":  [
+                                                       4.47,
+                                                       -0.36,
+                                                       0.0
+                                                   ],
+                                      "scale":  [
+                                                    1.0,
+                                                    1.0,
+                                                    1.0
+                                                ],
+                                      "controller":  "Assets/Sprites/28102026/Wrag/Hurt_Warg/frame_000_0.controller",
+                                      "states":  [
+                                                     {
+                                                         "name":  "HurtWragAnim",
+                                                         "speed":  1.0,
+                                                         "transitionCount":  0
+                                                     }
+                                                 ],
+                                      "clips":  [
+                                                    {
+                                                        "name":  "HurtWragAnim",
+                                                        "path":  "Assets/Sprites/28102026/Wrag/Hurt_Warg/HurtWragAnim.anim",
+                                                        "length":  3.0,
+                                                        "fps":  12.0,
+                                                        "loop":  false,
+                                                        "events":  0
+                                                    }
+                                                ]
+                                  }
+                              ],
+                   "missingScripts":  0,
+                   "rootCount":  16
+               }
+}
