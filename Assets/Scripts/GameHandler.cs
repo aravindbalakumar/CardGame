@@ -65,7 +65,7 @@ namespace Game
         private void OnRaycastHit(GameObject hitObject)
         {
             var playerComp = hitObject.GetComponent<Player>();
-            if (playerComp == null && selectedCard == null)
+            if (playerComp == null || selectedCard == null || selectedCard.cardData == null)
             {
                 return;
             }
@@ -108,10 +108,31 @@ namespace Game
 
         public void UpdateCardDeck()
         {
+            if (currentLocalPlayer == null || currentLocalPlayer.currentHand == null || cardParent == null || cardPrefab == null) return;
+            var existing = new List<Card>(cardParent.GetComponentsInChildren<Card>(true));
             foreach (var cardData in currentLocalPlayer.currentHand)
             {
-                Card card = Instantiate(cardPrefab, cardParent);
-                card.InitializeCard(cardData);
+                if (cardData == null) continue;
+                int index = existing.FindIndex(card => card != null && card.cardData == cardData);
+                Card card;
+                if (index >= 0)
+                {
+                    card = existing[index];
+                    existing.RemoveAt(index);
+                }
+                else
+                {
+                    card = Instantiate(cardPrefab, cardParent);
+                    card.InitializeCard(cardData);
+                }
+                card.transform.SetAsLastSibling();
+            }
+            foreach (var card in existing)
+            {
+                if (card == null) continue;
+                if (card == selectedCard) UpdateSelectedCard(card);
+                card.gameObject.SetActive(false);
+                Destroy(card.gameObject);
             }
         }
 
@@ -125,6 +146,8 @@ namespace Game
             if (selectedCard == this.selectedCard)
             {
                 this.selectedCard = null;
+                isCardSelected = false;
+                _inputHandler.shouldTrackInput = false;
                 return;
             }
             else

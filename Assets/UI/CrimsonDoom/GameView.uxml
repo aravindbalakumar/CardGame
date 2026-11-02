@@ -10,7 +10,7 @@
             <ui:VisualElement class="spacer" />
             <ui:Label name="preview-label" text="DESIGN PREVIEW" class="eyebrow preview-label" tooltip="Gameplay actors are inactive in this scene. Reference values are shown until a live hand is available." />
             <ui:Button name="journal-button" class="nav-button journal" tooltip="Journal is not implemented yet." enabled="false" />
-            <ui:Button name="deck-button" class="nav-button book" tooltip="View hand" />
+            <ui:Button name="deck-button" class="nav-button book" tooltip="Browse card collection / return to hand" />
             <ui:Button name="settings-button" class="nav-button gear" tooltip="UI display options" />
         </ui:VisualElement>
         <ui:VisualElement class="arena">
@@ -73,6 +73,7 @@
                 <ui:Label text="Energy" class="energy-caption" />
             </ui:VisualElement>
             <ui:VisualElement class="hand-region">
+                <ui:Label name="hand-empty" text="No cards available" class="hand-empty hidden" />
                 <ui:Label name="selection-hint" text="" class="selection-hint" />
                 <ui:ScrollView name="hand-scroll" mode="Horizontal" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Hidden" class="hand-scroll">
                     <ui:VisualElement name="hand" class="hand" />

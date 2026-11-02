@@ -235,3 +235,36 @@
 .narrow .controls { width: 20%; }
 .portrait-layout .player-status { width: 28%; }
 .portrait-layout .controls { width: 100%; }
+
+/* Complete 416 x 716 card faces. Fixed geometry keeps every card readable as the hand grows. */
+.bottom-area { height: 324px; padding-right: 32px; }
+.player-status { width: 230px; }
+.controls { width: 210px; }
+.hand-region { margin-right: 22px; }
+.hand-scroll .unity-scroll-view__content-viewport { overflow: hidden; }
+.hand-scroll .unity-scroll-view__content-container { flex-grow: 1; align-items: stretch; }
+.hand { flex-shrink: 0; min-width: 100%; padding: 24px 8px 8px; align-items: flex-end; }
+.hand-card { width: 162px; min-width: 162px; height: 279px; flex-shrink: 0; margin: 0 6px; border-width: 0; border-radius: 6px; }
+.hand-card.card-first, .hand-card.card-last { rotate: 0; translate: 0 0; }
+.hand-card:hover { translate: 0 -8px; scale: 1 1; }
+.hand-card.selected { translate: 0 -12px; border-width: 0; }
+.hand-card:focus { border-width: 0; }
+.hand-card:focus { background-color: rgb(206, 170, 119); }
+
+.preview-card .card-title, .preview-card .card-cost, .preview-card .card-art,
+.preview-card .card-description, .preview-card .card-kind { display: none; }
+.data-card .card-art { display: none; }
+.data-card .card-title { left: 28%; right: 8%; top: 11%; height: 6%; margin: 0; padding: 0; font-size: 14px; background-color: rgb(17, 16, 13); color: rgb(247, 230, 182); }
+.data-card .card-cost { left: 9%; top: 8%; width: 15%; height: 9%; margin: 0; padding: 0; font-size: 24px; color: rgb(255, 239, 202); background-color: rgb(111, 14, 14); }
+.card-kind { position: absolute; left: 12%; right: 10%; top: 72%; height: 8%; margin: 0; padding: 0; font-size: 11px; -unity-text-align: middle-center; color: rgb(247, 230, 182); background-color: rgb(17, 16, 13); }
+.data-card .card-description { left: 11%; right: 10%; top: 81%; bottom: 8%; margin: 0; padding: 0 2px; font-size: 11px; color: rgb(247, 230, 182); background-color: rgb(17, 16, 13); }
+.missing-face { background-color: rgb(26, 20, 15); border-color: var(--gold); border-width: 1px; }
+.missing-face .card-art { display: flex; top: 20%; height: 50%; }
+.hand-empty { position: absolute; left: 0; right: 0; top: 45%; -unity-text-align: middle-center; color: var(--muted); }
+.compact .bottom-area, .narrow .bottom-area { height: 292px; flex-wrap: nowrap; }
+.compact .hand-card, .narrow .hand-card { width: 145px; min-width: 145px; height: 250px; }
+.compact .hand-card .card-title { font-size: 12px; }
+.compact .hand-card .card-description { font-size: 10px; }
+.portrait-layout .bottom-area { height: 410px; flex-wrap: wrap; }
+.portrait-layout .hand-region { width: 72%; height: 292px; margin-right: 0; }
+.portrait-layout .controls { height: 110px; }

@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21382960e19550b45850674bec4dffac, type: 3}
+  m_Name: CrimsonDoomCardCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::CrimsonDoom.UI.CardCatalog
+  entries:
+  - id: a9384f6e1c444a4449b9e109788b9341
+    title: Bandage
+    image: {fileID: 2800000, guid: a9384f6e1c444a4449b9e109788b9341, type: 3}
+    data: {fileID: 11400000, guid: c22f77cfcaebfc44b832635000bfd447, type: 2}
+  - id: 544176100de3b2b47a0a60c871039145
+    title: Blessed Ward
+    image: {fileID: 2800000, guid: 544176100de3b2b47a0a60c871039145, type: 3}
+    data: {fileID: 11400000, guid: a31edcedc92d09b4fb399e7d228f15d9, type: 2}
+  - id: e94ebf3ade9af73418c3010521455a1b
+    title: Blood Tithe
+    image: {fileID: 2800000, guid: e94ebf3ade9af73418c3010521455a1b, type: 3}
+    data: {fileID: 11400000, guid: e956a085e6770f24da7f477a584d5777, type: 2}
+  - id: 5ca105b2a6bad2845a71b9b3084d0c5d
+    title: Consecrate
+    image: {fileID: 2800000, guid: 5ca105b2a6bad2845a71b9b3084d0c5d, type: 3}
+    data: {fileID: 0}
+  - id: 86672f88a37819f41a9ea768bfaad480
+    title: Consecrated Strike
+    image: {fileID: 2800000, guid: 86672f88a37819f41a9ea768bfaad480, type: 3}
+    data: {fileID: 0}
+  - id: c50de4a676e0f9246a66cd988e89fd6f
+    title: Dead Weight
+    image: {fileID: 2800000, guid: c50de4a676e0f9246a66cd988e89fd6f, type: 3}
+    data: {fileID: 0}
+  - id: 3ff66b83f60246f49bc8fc198d27c5c6
+    title: Divine Intervention
+    image: {fileID: 2800000, guid: 3ff66b83f60246f49bc8fc198d27c5c6, type: 3}
+    data: {fileID: 0}
+  - id: 63e2d31633178be4aafc35c152eae4b1
+    title: Heretics Flame
+    image: {fileID: 2800000, guid: 63e2d31633178be4aafc35c152eae4b1, type: 3}
+    data: {fileID: 0}
+  - id: f3abc994911d65d4fa56eba32c861df7
+    title: Holy Strike
+    image: {fileID: 2800000, guid: f3abc994911d65d4fa56eba32c861df7, type: 3}
+    data: {fileID: 0}
+  - id: 0bd0b939ca4ac2140b702d032f070468
+    title: Leech
+    image: {fileID: 2800000, guid: 0bd0b939ca4ac2140b702d032f070468, type: 3}
+    data: {fileID: 0}
+  - id: 64e13aaae21aea745aed5a26ed01b94c
+    title: Pray
+    image: {fileID: 2800000, guid: 64e13aaae21aea745aed5a26ed01b94c, type: 3}
+    data: {fileID: 0}
+  - id: 4b0bf5ee2d1485442baa04bd8a0aa11a
+    title: Quick Stab
+    image: {fileID: 2800000, guid: 4b0bf5ee2d1485442baa04bd8a0aa11a, type: 3}
+    data: {fileID: 11400000, guid: 8541738f5bc0bd344a586a95dabe01fd, type: 2}
+  - id: af12c736809927a4faf80b973a5c888a
+    title: Righteous Blow
+    image: {fileID: 2800000, guid: af12c736809927a4faf80b973a5c888a, type: 3}
+    data: {fileID: 11400000, guid: 05c3ceaf92aa95c429b85b9213de4eb5, type: 2}
+  - id: 9681d7ef98c837d4e8397d920d7af3fc
+    title: Sanctified Aegis
+    image: {fileID: 2800000, guid: 9681d7ef98c837d4e8397d920d7af3fc, type: 3}
+    data: {fileID: 0}
+  - id: 3236fae361374c648a7e27c1beeeaeb2
+    title: Sanctuary
+    image: {fileID: 2800000, guid: 3236fae361374c648a7e27c1beeeaeb2, type: 3}
+    data: {fileID: 0}
+  - id: 152b04566acf3d546b234bd8f98b3254
+    title: Shadow Veil
+    image: {fileID: 2800000, guid: 152b04566acf3d546b234bd8f98b3254, type: 3}
+    data: {fileID: 0}
+  - id: 3305562cbc2a52b4ab05d1767fe0bbe6
+    title: Smite
+    image: {fileID: 2800000, guid: 3305562cbc2a52b4ab05d1767fe0bbe6, type: 3}
+    data: {fileID: 0}
+  - id: 122a99eb46736744c973383cd91cb5d9
+    title: Soul Bargain
+    image: {fileID: 2800000, guid: 122a99eb46736744c973383cd91cb5d9, type: 3}
+    data: {fileID: 0}
+  - id: 61ad100385ae60a4e8a6ef71aa0311e1
+    title: Sunburst Flare
+    image: {fileID: 2800000, guid: 61ad100385ae60a4e8a6ef71aa0311e1, type: 3}
+    data: {fileID: 0}
+  - id: bc92c013bb3325e42b50dcf6f48ca739
+    title: Vanquish Revenants
+    image: {fileID: 2800000, guid: bc92c013bb3325e42b50dcf6f48ca739, type: 3}
+    data: {fileID: 0}
+  - id: 54cc3add1d068d745887f412d5b7f68c
+    title: Wrath of the Seraphim
+    image: {fileID: 2800000, guid: 54cc3add1d068d745887f412d5b7f68c, type: 3}
+    data: {fileID: 0}
+  revision: 4
+  contentHash: d4d70191400961b502af5158db83a2bb

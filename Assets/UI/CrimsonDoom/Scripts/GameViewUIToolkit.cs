@@ -39,12 +39,9 @@ namespace CrimsonDoom.UI
         [Tooltip("Add one entry per animation pose. The assigned scene object's Transform controls its placement.")]
         [SerializeField] private List<CharacterAnimationBinding> characterAnimations = new List<CharacterAnimationBinding>();
         [SerializeField] private VisualTreeAsset cardTemplate;
-        [SerializeField] private Sprite[] previewCardSprites;
-        private static readonly string[] PreviewDescriptions =
-        {
-            "Deal 10 damage.", "Return a fallen\nally to 50% HP.", "Deal 10 damage.",
-            "Heal 10 HP.", "Gain 3 Block\nand 1 Strength."
-        };
+        private CardCatalog catalog;
+        private int catalogRevision = -1;
+        private ScrollView handScroll;
 
         private readonly List<CardTypeScriptableObject> displayedHand = new List<CardTypeScriptableObject>();
         private readonly List<Button> cardButtons = new List<Button>();
@@ -58,7 +55,8 @@ namespace CrimsonDoom.UI
         private Label animationStatus;
         private IVisualElementScheduledItem refreshTask;
         private Card selectedCard;
-        private bool showingPreview, initialized, turnAvailable = true;
+        private bool showingPreview, browsingCatalog, initialized, turnAvailable = true;
+        private bool DisplaysCatalog => showingPreview || browsingCatalog;
         private SpriteRenderer activeHeroRenderer;
         private SpriteRenderer activeEnemyRenderer;
         private int legacyChildCount;
@@ -82,6 +80,8 @@ namespace CrimsonDoom.UI
             root = documentRoot.Q("game-root");
             if (root == null) return;
             hand = root.Q("hand");
+            handScroll = root.Q<ScrollView>("hand-scroll");
+            catalog = CardCatalog.Load();
             headerHealth = root.Q<Label>("header-health");
             playerHealth = root.Q<Label>("player-health");
             block = root.Q<Label>("player-block");
@@ -113,7 +113,7 @@ namespace CrimsonDoom.UI
             settingsButton.clicked += ToggleOptions;
             closeOptions.clicked += CloseOptions;
             stopAnimationPreview.clicked += StopAnimationPreview;
-            deckButton.clicked += FocusHand;
+            deckButton.clicked += ToggleCatalog;
             drawPile.clicked += FocusHand;
             BuildAnimationControls();
             root.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
@@ -165,7 +165,7 @@ namespace CrimsonDoom.UI
             settingsButton.clicked -= ToggleOptions;
             closeOptions.clicked -= CloseOptions;
             stopAnimationPreview.clicked -= StopAnimationPreview;
-            deckButton.clicked -= FocusHand;
+            deckButton.clicked -= ToggleCatalog;
             drawPile.clicked -= FocusHand;
             root.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             displayedHand.Clear();
@@ -204,6 +204,12 @@ namespace CrimsonDoom.UI
                 BuildAnimationControls();
                 force = true;
             }
+            if (catalog == null) catalog = CardCatalog.Load();
+            if (catalog != null && catalogRevision != catalog.Revision)
+            {
+                catalogRevision = catalog.Revision;
+                force = true;
+            }
             bool preview = !HasLiveGame;
             bool modeChanged = showingPreview != preview;
             showingPreview = preview;
@@ -212,8 +218,8 @@ namespace CrimsonDoom.UI
                 RebuildHand();
                 previewLabel.EnableInClassList("hidden", !preview);
                 intentPreview.EnableInClassList("hidden", !preview);
-                SetText(energyValue, preview ? "3/3" : "—");
-                SetText(currencyCount, preview ? "15" : "—");
+                SetText(energyValue, preview ? "3/3" : "\u2014");
+                SetText(currencyCount, preview ? "15" : "\u2014");
                 if (!preview)
                 {
                     OnPlayerStatus(true, localPlayer.Health, localPlayer.Armor);
@@ -241,7 +247,7 @@ namespace CrimsonDoom.UI
 
         private bool HandChanged()
         {
-            if (showingPreview) return false;
+            if (DisplaysCatalog) return false;
             if (legacyCardParent != null && legacyCardParent.childCount != legacyChildCount) return true;
             var current = localPlayer.currentHand;
             if (displayedHand.Count != current.Count) return true;
@@ -256,11 +262,12 @@ namespace CrimsonDoom.UI
             cardButtons.Clear();
             displayedHand.Clear();
             legacyCards.Clear();
+            if (!DisplaysCatalog && gameHandler != null) gameHandler.UpdateCardDeck();
             legacyChildCount = legacyCardParent != null ? legacyCardParent.childCount : 0;
             if (cardTemplate == null) return;
-            if (!showingPreview && legacyCardParent != null)
+            if (!DisplaysCatalog && legacyCardParent != null)
                 legacyCardParent.GetComponentsInChildren(false, legacyCards);
-            int count = showingPreview ? previewCardSprites.Length : localPlayer.currentHand.Count;
+            int count = DisplaysCatalog ? (catalog != null ? catalog.Entries.Count : 0) : localPlayer.currentHand.Count;
             for (int i = 0; i < count; i++)
             {
                 var tree = cardTemplate.CloneTree();
@@ -268,14 +275,15 @@ namespace CrimsonDoom.UI
                 button.RemoveFromHierarchy();
                 hand.Add(button);
                 cardButtons.Add(button);
-                button.EnableInClassList("card-first", i == 0);
-                button.EnableInClassList("card-last", i == count - 1);
-                if (showingPreview)
+                button.RegisterCallback<FocusInEvent>(_ => handScroll.ScrollTo(button));
+                if (DisplaysCatalog)
                 {
+                    var entry = catalog.Entries[i];
                     button.AddToClassList("preview-card");
-                    button.Q<Image>("card-frame").sprite = previewCardSprites[i];
-                    button.Q<Label>("card-description").text = PreviewDescriptions[i % PreviewDescriptions.Length];
-                    button.tooltip = "Design preview — activate gameplay to use cards.";
+                    button.Q<Image>("card-frame").image = entry.image;
+                    button.tooltip = entry.title + (entry.data != null
+                        ? " - " + Describe(entry.data.cardAction) + Describe(entry.data.postCardAction)
+                        : " - artwork preview; no gameplay data assigned.");
                     // Preview cards may be inspected and focused, but never execute game actions.
                     int index = i;
                     button.clicked += () => InspectPreview(index);
@@ -285,24 +293,36 @@ namespace CrimsonDoom.UI
                     var data = localPlayer.currentHand[i];
                     displayedHand.Add(data);
                     if (data == null) { button.SetEnabled(false); continue; }
-                    button.Q<Image>("card-frame").sprite = previewCardSprites[0];
+                    button.AddToClassList("data-card");
+                    var face = catalog != null ? catalog.FindImage(data) : data.fullCardTexture;
+                    button.Q<Image>("card-frame").image = face;
+                    button.EnableInClassList("missing-face", face == null);
                     button.Q<Label>("card-title").text = data.metaData.name;
                     button.Q<Label>("card-cost").text = data.energyUsage.ToString();
                     button.Q<Image>("card-art").image = data.metaData.cardTexture;
+                    button.Q<Label>("card-kind").text = data.cardAction.actionType.ToString();
                     button.Q<Label>("card-description").text = Describe(data.cardAction) + Describe(data.postCardAction);
-                    button.tooltip = data.metaData.name + " — select, then choose a highlighted target.";
+                    button.tooltip = data.metaData.name + " \u2014 select, then choose a highlighted target.";
                     int index = i;
                     button.clicked += () => SelectCard(index);
                 }
             }
-            SetText(handCount, showingPreview ? "12" : count.ToString());
-            SetText(root.Q<Label>("discard-count"), showingPreview ? "0" : "—");
+            SetText(handCount, count.ToString());
+            root.Q<Label>("hand-empty")?.EnableInClassList("hidden", count > 0);
+            RefreshAvailability();
+            SetText(root.Q<Label>("discard-count"), DisplaysCatalog ? "0" : "\u2014");
         }
 
         private void InspectPreview(int index)
         {
-            for (int i = 0; i < cardButtons.Count; i++) cardButtons[i].EnableInClassList("selected", i == index);
-            SetText(hint, "Design preview · gameplay is inactive");
+            for (int i = 0; i < cardButtons.Count; i++)
+            {
+                bool selected = i == index;
+                cardButtons[i].EnableInClassList("selected", selected);
+                cardButtons[i].Q<Image>("card-frame").tintColor = selected ? new Color(1f, 0.91f, 0.71f) : Color.white;
+            }
+            handScroll.ScrollTo(cardButtons[index]);
+            SetText(hint, catalog.Entries[index].title + " - artwork preview");
         }
 
         private Card FindLegacyCard(int index)
@@ -318,39 +338,42 @@ namespace CrimsonDoom.UI
 
         private void SelectCard(int index)
         {
-            if (showingPreview || !turnAvailable || gameHandler == null) return;
+            if (DisplaysCatalog || !turnAvailable || gameHandler == null) return;
             var legacyCard = FindLegacyCard(index);
             if (legacyCard == null) return;
             // Uses the original selection/targeting path, including its existing highlights.
             legacyCard.OnCardSelected();
             selectedCard = gameHandler.SelectedCard;
             RefreshAvailability();
+            handScroll.ScrollTo(cardButtons[index]);
         }
 
         private void RefreshAvailability()
         {
             bool ready = !showingPreview && turnAvailable && gameHandler != null && localPlayer.Health > 0;
             endTurn.SetEnabled(ready);
-            playerStatus.EnableInClassList("active-player", showingPreview || ready);
-            playerStatus.EnableInClassList("inactive-player", !showingPreview && !ready);
-            bool selected = ready && selectedCard != null && selectedCard.cardData != null;
+            playerStatus.EnableInClassList("active-player", DisplaysCatalog || ready);
+            playerStatus.EnableInClassList("inactive-player", !DisplaysCatalog && !ready);
+            bool selected = ready && !browsingCatalog && selectedCard != null && selectedCard.cardData != null;
             selfTarget.SetEnabled(selected && selectedCard.cardTargetGroup.HasFlag(TargetGroup.self));
             enemyTarget.SetEnabled(selected && opponent != null && opponent.isActiveAndEnabled && selectedCard.cardTargetGroup.HasFlag(TargetGroup.others));
             for (int i = 0; i < cardButtons.Count; i++)
             {
-                if (showingPreview) continue;
+                if (DisplaysCatalog) continue;
                 var card = FindLegacyCard(i);
                 cardButtons[i].SetEnabled(ready && card != null);
-                cardButtons[i].EnableInClassList("selected", card != null && card == selectedCard);
+                bool isSelected = card != null && card == selectedCard;
+                cardButtons[i].EnableInClassList("selected", isSelected);
+                cardButtons[i].Q<Image>("card-frame").tintColor = isSelected ? new Color(1f, 0.91f, 0.71f) : Color.white;
             }
-            if (!showingPreview) SetText(hint, selected ? "Choose a target" : "");
+            if (!DisplaysCatalog) SetText(hint, selected ? "Choose a target" : "");
         }
 
         private void TargetSelf() => Target(localPlayer);
         private void TargetOpponent() => Target(opponent);
         private void Target(Player target)
         {
-            if (showingPreview || !turnAvailable || target == null || selectedCard == null) return;
+            if (DisplaysCatalog || !turnAvailable || target == null || selectedCard == null) return;
             // The existing handler owns card effects and turn completion.
             gameHandler.inputHandler.OnRaycastHit.Invoke(target.gameObject);
         }
@@ -586,10 +609,22 @@ namespace CrimsonDoom.UI
 
         private void ToggleOptions() => options.ToggleInClassList("hidden");
         private void CloseOptions() => options.AddToClassList("hidden");
+        private void ToggleCatalog()
+        {
+            browsingCatalog = !browsingCatalog;
+            RefreshFromGame(true);
+            SetText(hint, browsingCatalog ? "Card collection - select a card to inspect" : "Select a card, then choose a target");
+        }
+
         private void FocusHand()
         {
+            if (browsingCatalog)
+            {
+                browsingCatalog = false;
+                RefreshFromGame(true);
+            }
             if (cardButtons.Count > 0) cardButtons[0].Focus();
-            SetText(hint, showingPreview ? "Design preview · gameplay is inactive" : "Select a card, then choose a target");
+            SetText(hint, showingPreview ? "Design preview \u00b7 gameplay is inactive" : "Select a card, then choose a target");
         }
 
         private static void SetText(Label label, string value)

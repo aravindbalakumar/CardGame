@@ -62,12 +62,7 @@ namespace CrimsonDoom.UI.Editor
             SetCharacterAnimation(characterAnimations.GetArrayElementAtIndex(1), "Voss", "Hurt", 0, hurtRenderer);
             Set(serialized, "enemyRenderer", FindRenderer(scene, "Wrag_Idle"));
             Set(serialized, "cardTemplate", AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Folder + "Components/HandCard.uxml"));
-            var sprites = AssetDatabase.LoadAllAssetsAtPath("Assets/Sprites/UI/Cardswithoutdescription.png").OfType<Sprite>().ToArray();
-            var names = new[] { "strike", "Resuurection", "Sword slash", "Holy light", "Blessing" };
-            var cards = serialized.FindProperty("previewCardSprites");
-            cards.arraySize = names.Length;
-            for (int i = 0; i < names.Length; i++)
-                cards.GetArrayElementAtIndex(i).objectReferenceValue = sprites.Single(s => s.name == names[i]);
+            CardCatalogImporter.Rebuild();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             root.SetActive(true);
             EditorUtility.SetDirty(panel);

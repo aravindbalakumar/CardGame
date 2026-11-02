@@ -11,6 +11,7 @@ namespace Game
     public class Card : MonoBehaviour
     {
         CardTypeScriptableObject cardBehaviourAndData;
+        private Sprite generatedIcon;
         public TargetGroup cardTargetGroup
         {
             get
@@ -35,10 +36,20 @@ namespace Game
         public void InitializeCard(CardTypeScriptableObject cardBehaviourAndData)
         {
             this.cardBehaviourAndData = cardBehaviourAndData;
-            cardIcon.overrideSprite = Sprite.Create(this.cardBehaviourAndData.metaData.cardTexture, new Rect(0, 0, this.cardBehaviourAndData.metaData.cardTexture.width, this.cardBehaviourAndData.metaData.cardTexture.height), Vector2.one / 2);
+            if (generatedIcon != null) Destroy(generatedIcon);
+            var texture = cardBehaviourAndData.metaData.cardTexture != null
+                ? cardBehaviourAndData.metaData.cardTexture : cardBehaviourAndData.fullCardTexture;
+            generatedIcon = texture != null
+                ? Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.one / 2) : null;
+            cardIcon.overrideSprite = generatedIcon;
             cardName.text = this.cardBehaviourAndData.metaData.name;
             cardEnergy.text = this.cardBehaviourAndData.energyUsage.ToString();
         }
+        private void OnDestroy()
+        {
+            if (generatedIcon != null) Destroy(generatedIcon);
+        }
+
         public void OnCardSelected()
         {
             Debug.Log("CARD IS SELECTED");

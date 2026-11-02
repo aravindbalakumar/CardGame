@@ -9,6 +9,8 @@ namespace Game.ScriptableObjects.Card
     public class CardTypeScriptableObject : ScriptableObject
     {
         public CardMetaData metaData;
+        [Tooltip("Optional complete card face. Otherwise the card catalog matches by card name or texture.")]
+        public Texture2D fullCardTexture;
         public TargetGroup targetGroup;
         public CardAction cardAction;
         public CardAction postCardAction;

@@ -15,6 +15,7 @@ MonoBehaviour:
   metaData:
     name: pierce
     cardTexture: {fileID: 2800000, guid: 7ea6db1d14c4dbd44ab2cb67bcdfc9aa, type: 3}
+  fullCardTexture: {fileID: 2800000, guid: 4b0bf5ee2d1485442baa04bd8a0aa11a, type: 3}
   targetGroup: 2
   cardAction:
     actionType: 0
